@@ -16,25 +16,25 @@ import java.io.IOException;
  */
 public class BankHandler {
 
-    private final static String QUEUE_NAME = "hello";
+	private final static String QUEUE_NAME = "hello";
 
-    public void generateBankList() throws IOException {
-        ConnectionFactory connfac = new ConnectionFactory();
-        connfac.setHost("datdb.cphbusiness.dk");
-        connfac.setPort(5672);
-        connfac.setUsername("student");
-        connfac.setPassword("cph");
-        Connection connection = connfac.newConnection();
-        Channel channel = connection.createChannel();
+	public void generateBankList() throws IOException {
+		ConnectionFactory connfac = new ConnectionFactory();
+		connfac.setHost("datdb.cphbusiness.dk");
+		connfac.setPort(5672);
+		connfac.setUsername("student");
+		connfac.setPassword("cph");
+		Connection connection = connfac.newConnection();
+		Channel channel = connection.createChannel();
 
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-        String message = "Hello World!";
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
-            channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
-        }
-        System.out.println(" [x] Sent '" + message + "'");
+		channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+		String message = "Hello World!";
+		for (int i = 0; i < Integer.MAX_VALUE; i++) {
+			channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+		}
+		System.out.println(" [x] Sent '" + message + "'");
 
-        channel.close();
-        connection.close();
-    }
+		channel.close();
+		connection.close();
+	}
 }

@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.loanbroker._loan_broker;
 
 /**
@@ -11,5 +10,5 @@ package com.loanbroker._loan_broker;
  * @author Andreas
  */
 public class LoanTaker {
-    
+
 }
