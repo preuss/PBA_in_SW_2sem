@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://datdb.cphbusiness.dk:8080/CreditBureau/CreditScoreService?wsdl" uri="wsdl/datdb.cphbusiness.dk_8080/CreditBureau/CreditScoreService.wsdl"/>
+    <system systemId="http://datdb.cphbusiness.dk:8080/CreditBureau/CreditScoreService?xsd=1" uri="wsdl/datdb.cphbusiness.dk_8080/CreditBureau/CreditScoreService.xsd_1.xsd"/>
+</catalog>
