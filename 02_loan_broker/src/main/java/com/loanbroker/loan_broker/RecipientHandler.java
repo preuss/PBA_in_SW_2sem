@@ -80,15 +80,18 @@ public class RecipientHandler extends Thread {
 		Serializer serializer = new Persister();
 		try {
 			CanonicalDTO dto = serializer.read(CanonicalDTO.class, xmlStr);
+                        
+//                        OutputStream outputStream = new ByteArrayOutputStream();
+//                        serializer.write(dto, outputStream);
 
 			Connection conn = getConnection();
 			for (BankDTO bank : dto.getBanks()) {
 				Channel channel = conn.createChannel();
 
-				String quequeName = getBankChannelName(bank.getName());
-				if (quequeName != null) {
-					channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-					channel.basicPublish("", QUEUE_NAME, null, xmlStr.getBytes());
+				String queueName = getBankChannelName(bank.getName());
+				if (queueName != null) {
+					channel.queueDeclare(queueName, false, false, false, null);
+					channel.basicPublish("", queueName, null, xmlStr.getBytes());
 					System.out.println(" [x] Sent '" + xmlStr + "'");
 				} else {
 					// TODO: publish to error queue.
