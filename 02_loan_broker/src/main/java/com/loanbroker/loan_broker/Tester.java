@@ -21,7 +21,7 @@ public class Tester {
 //        CreditHandler cr = new CreditHandler();
 //        cr.getCreditScore();
 
-                RecipientHandler rh = new RecipientHandler("Group 2 - Banks", "Group 2 - Recipient List");
+               /* RecipientHandler rh = new RecipientHandler("Group 2 - Banks", "Group 2 - Recipient List");
                 Serializer ser = new Persister();
 		CanonicalDTO can = new CanonicalDTO();
 		List<BankDTO> banks = new ArrayList<BankDTO>();
@@ -40,5 +40,9 @@ public class Tester {
 		} catch (Exception ex) {
 			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
 		}
+                       */
+            
+            CreditHandler ch = new CreditHandler();
+            ch.getCreditScore();
         }
 }

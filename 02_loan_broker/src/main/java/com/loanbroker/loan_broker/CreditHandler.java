@@ -7,6 +7,10 @@ import java.io.IOException;
 import wservices.CreditScoreService;
 import wservices.CreditScoreService_Service;
 import com.rabbitmq.client.AMQP.BasicProperties;
+import com.rabbitmq.client.ConsumerCancelledException;
+import com.rabbitmq.client.ShutdownSignalException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -14,7 +18,7 @@ import com.rabbitmq.client.AMQP.BasicProperties;
  */
 public class CreditHandler {
 
-    private final static String QUEUE_NAME = "02_banklist_channel";
+    private final static String QUEUE_NAME = "02_rating_channel";
 
     public void getCreditScore() {
 
@@ -36,12 +40,10 @@ public class CreditHandler {
     }
 
     private String generateCorrelationID() {
-        String corrID = java.util.UUID.randomUUID().toString();
-
-        return null;
+        return java.util.UUID.randomUUID().toString();
     }
 
-    public void getBanks(int rating) throws IOException {
+    private void getBanks(int rating) throws IOException {
         ConnectionFactory connfac = new ConnectionFactory();
         connfac.setHost("datdb.cphbusiness.dk");
         connfac.setPort(5672); //dette er rabbitMQ protokol-porten. 
@@ -52,11 +54,25 @@ public class CreditHandler {
 
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
         String message = "" + rating;
-        channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
         System.out.println(" [x] Sent '" + message + "'");
         String corrId = generateCorrelationID();
-        BasicProperties props = new BasicProperties.Builder().correlationId(corrId).replyTo(channel.queueDeclare().getQueue()).build();
+        String replyTo = channel.queueDeclare().getQueue();
+        BasicProperties.Builder propBuilder = new BasicProperties.Builder();
+        propBuilder.correlationId(corrId);
+        propBuilder.replyTo(replyTo);
+        BasicProperties props = propBuilder.build();
         channel.basicPublish("", QUEUE_NAME, props, message.getBytes());
+        
+        BankHandler bh = new BankHandler();
+        try {
+            bh.receiveCreditScore();
+        } catch (ShutdownSignalException ex) {
+            Logger.getLogger(CreditHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ConsumerCancelledException ex) {
+            Logger.getLogger(CreditHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CreditHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
         channel.close();
         connection.close();
 
