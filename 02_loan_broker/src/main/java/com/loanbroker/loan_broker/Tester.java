@@ -26,6 +26,7 @@ public class Tester {
 		CanonicalDTO can = new CanonicalDTO();
 		List<BankDTO> banks = new ArrayList<BankDTO>();
 		
+                
 		banks.add(new BankDTO("xml", 5.6));
 		banks.add(new BankDTO("xml", 5.6));
 		banks.add(new BankDTO("xml", 5.6));
