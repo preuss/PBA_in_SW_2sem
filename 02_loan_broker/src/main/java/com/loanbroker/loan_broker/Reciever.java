@@ -1,4 +1,4 @@
-package com.loanbroker._loan_broker;
+package com.loanbroker.loan_broker;
 
 import java.io.IOException;
 

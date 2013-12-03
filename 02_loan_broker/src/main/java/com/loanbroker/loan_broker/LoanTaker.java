@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.loanbroker._loan_broker;
+package com.loanbroker.loan_broker;
 
 /**
  *
