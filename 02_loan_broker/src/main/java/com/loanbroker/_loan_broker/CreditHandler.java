@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.loanbroker._loan_broker;
 
 import com.rabbitmq.client.Channel;
@@ -18,11 +12,10 @@ import wservices.CreditScoreService_Service;
  * @author Andreas
  */
 public class CreditHandler {
-    
-    private final static String QUEUE_NAME = "02_banklist_channel";
 
-    public void getCreditScore(){
+	private final static String QUEUE_NAME = "02_banklist_channel";
 
+	public void getCreditScore() {
 
 		try { // Call Web Service Operation
 			CreditScoreService_Service service = new CreditScoreService_Service();
@@ -32,14 +25,14 @@ public class CreditHandler {
 			// TODO process result here
 			int result = port.creditScore(ssn);
 			System.out.println("Result from Credit Bureau = " + result);
-                        if(result!=-1)
-                            getBanks(result);
+			if (result != -1) {
+				getBanks(result);
+			}
 		} catch (IOException ex) {
 			System.out.println(ex.getMessage());
 		}
 
-    }
-    
+	}
 
 	public void getBanks(int rating) throws IOException {
 		ConnectionFactory connfac = new ConnectionFactory();
@@ -51,7 +44,7 @@ public class CreditHandler {
 		Channel channel = connection.createChannel();
 
 		channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-		String message = ""+rating;
+		String message = "" + rating;
 		channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
 		System.out.println(" [x] Sent '" + message + "'");
 
