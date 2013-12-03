@@ -77,23 +77,5 @@ public class RecipientHandler extends Thread {
 		connection.close();
 
 	}
-	public static void main(String[] args) {
-		Serializer ser = new Persister();
-		CanonicalDTO can = new CanonicalDTO();
-		List<BankDTO> banks = new ArrayList<BankDTO>();
-		
-		banks.add(new BankDTO("xml", 5.6));
-		banks.add(new BankDTO("xml", 5.6));
-		banks.add(new BankDTO("xml", 5.6));
-		banks.add(new BankDTO("xml", 5.6));
-		can.setBanks(banks);
-		
-		OutputStream o = new ByteArrayOutputStream();
-		try {
-			ser.write(can, o);
-			System.out.println("String: " + o.toString());
-		} catch (Exception ex) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
+
 }
