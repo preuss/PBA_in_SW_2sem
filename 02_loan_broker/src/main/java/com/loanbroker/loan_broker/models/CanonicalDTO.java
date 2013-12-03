@@ -5,10 +5,10 @@
  */
 package com.loanbroker.loan_broker.models;
 
-import org.simpleframework.xml.Attribute;
-import org.simpleframework.xml.Default;
-import org.simpleframework.xml.DefaultType;
+import java.util.ArrayList;
+import java.util.List;
 import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
 
 /**
  *
@@ -20,16 +20,19 @@ public class CanonicalDTO {
 	private String ssn;
 	@Element(required = true)
 	private double loanAmount;
+	@Element(required = true)
+	private int loanDuration; // Month.
 
 	@Element(required = false)
 	private Integer creditScore;
 
-	@Element(required = false)
-	private String test;
+	@ElementList(required = false)
+	private ArrayList<BankDTO> banks;
 
 	public CanonicalDTO() {
 		ssn = "";
 		loanAmount = 0;
+		loanDuration = 360;
 	}
 
 	public String getSsn() {
@@ -48,11 +51,27 @@ public class CanonicalDTO {
 		this.loanAmount = loanAmount;
 	}
 
-	public int getCreditScore() {
+	public int getLoanDuration() {
+		return loanDuration;
+	}
+
+	public void setLoanDuration(int loanDuration) {
+		this.loanDuration = loanDuration;
+	}
+
+	public Integer getCreditScore() {
 		return creditScore;
 	}
 
-	public void setCreditScore(int creditScore) {
+	public void setCreditScore(Integer creditScore) {
 		this.creditScore = creditScore;
+	}
+
+	public List<BankDTO> getBanks() {
+		return banks;
+	}
+
+	public void setBanks(List<BankDTO> banks) {
+		this.banks = new ArrayList<BankDTO>(banks);
 	}
 }

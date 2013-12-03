@@ -1,6 +1,7 @@
 package com.loanbroker.loan_broker;
 
 import com.loanbroker.loan_broker.models.CanonicalDTO;
+import com.loanbroker.loan_broker.models.BankDTO;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -8,6 +9,8 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.simpleframework.xml.Serializer;
@@ -77,6 +80,13 @@ public class RecipientHandler extends Thread {
 	public static void main(String[] args) {
 		Serializer ser = new Persister();
 		CanonicalDTO can = new CanonicalDTO();
+		List<BankDTO> banks = new ArrayList<BankDTO>();
+		
+		banks.add(new BankDTO("xml", 5.6));
+		banks.add(new BankDTO("xml", 5.6));
+		banks.add(new BankDTO("xml", 5.6));
+		banks.add(new BankDTO("xml", 5.6));
+		can.setBanks(banks);
 		
 		OutputStream o = new ByteArrayOutputStream();
 		try {
