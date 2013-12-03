@@ -9,15 +9,25 @@ import java.io.IOException;
  *
  * @author Marc
  */
-public class RecipientHandler {
+public class RecipientHandler extends Threads {
 
-	private final static String QUEUE_NAME = "02_recipient_list_channel";
-	private final static String QUEUE_NAME_BANK_1 = "02_bank_xml_channel";
-	private final static String QUEUE_NAME_BANK_2 = "02_bank_json_channel";
-	private final static String QUEUE_NAME_BANK_3 = "02_bank_rabbitmq_channel";
-	private final static String QUEUE_NAME_BANK_4 = "02_bank_webservice_channel";
+	private final String QUEUE_NAME;
+	private final String QUEUE_NAME_BANK_1;
+	private final String QUEUE_NAME_BANK_2;
+	private final String QUEUE_NAME_BANK_3;
+	private final String QUEUE_NAME_BANK_4;
+	/*	private final String QUEUE_NAME ="02_recipient_list_channel";
+	 private final String QUEUE_NAME_BANK_1 = "02_bank_xml_channel";
+	 private final String QUEUE_NAME_BANK_2 = "02_bank_json_channel";
+	 private final String QUEUE_NAME_BANK_3 = "02_bank_rabbitmq_channel";
+	 private final String QUEUE_NAME_BANK_4 = "02_bank_webservice_channel";*/
 
-	public RecipientHandler() {
+	public RecipientHandler(String queueName, String bankPrefix) {
+		QUEUE_NAME = queueName;
+		QUEUE_NAME_BANK_1 = bankPrefix + "_xml";
+		QUEUE_NAME_BANK_2 = bankPrefix + "_json";
+		QUEUE_NAME_BANK_3 = bankPrefix + "_rabbitmq";
+		QUEUE_NAME_BANK_4 = bankPrefix + "_webservice";
 	}
 
 	private Connection GetConnection() throws IOException {
