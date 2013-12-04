@@ -42,7 +42,7 @@ public class Tester {
 		}
                        */
             
-            CreditHandler ch = new CreditHandler();
+            CreditHandler ch = new CreditHandler("02_rating_channel", "02_bank_channel");
             ch.getCreditScore();
         }
 }
