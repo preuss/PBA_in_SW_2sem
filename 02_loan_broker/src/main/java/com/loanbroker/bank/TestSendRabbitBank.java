@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 public class TestSendRabbitBank {
 
-    private static final String QUEUE_NAME = "rabbit_bank2556";
+    private static final String QUEUE_NAME = "rabbit_bankReceive";
 
     public static void main(String[] argv) throws IOException {
         ConnectionFactory factory = new ConnectionFactory();

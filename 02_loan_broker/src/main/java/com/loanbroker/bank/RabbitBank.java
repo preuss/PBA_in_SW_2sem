@@ -5,11 +5,16 @@
  */
 package com.loanbroker.bank;
 
+import com.loanbroker.handlers.HandlerThread;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.ShutdownSignalException;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * consumes messages that have the format
@@ -17,35 +22,61 @@ import java.io.IOException;
  *
  * @author Marc
  */
-public class RabbitBank {
+public class RabbitBank extends HandlerThread {
 
-    private static final String QUEUE_NAME = "rabbit_bank2556";
-    private static final String QUEUE_NAME_1 = "rabbit_bank5625";
+    private String receiveQueue;
+    private String sendQueue;
+
+    public RabbitBank() {
+    }
+
+    public RabbitBank(String receiveQueue, String sendQueue) {
+        this.receiveQueue = receiveQueue;
+        this.sendQueue = sendQueue;
+    }
 
     public static void main(String[] argv) throws IOException, InterruptedException {
+        String rabbitBankIn = "rabbit_bankRecieve";
+        String rabbitBankOut = "rabbit_bankSend";
+        RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
+        rabbitBank.start();
 
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("datdb.cphbusiness.dk");
-        factory.setUsername("student");
-        factory.setPassword("cph");
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
+    }
 
-        channel.queueDeclare(QUEUE_NAME_1, false, false, false, null);
+    @Override
+    protected void doRun() {
+        try {
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost("datdb.cphbusiness.dk");
+            factory.setUsername("student");
+            factory.setPassword("cph");
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
 
-        QueueingConsumer consumer = new QueueingConsumer(channel);
-        channel.basicConsume(QUEUE_NAME, true, consumer);
+            channel.queueDeclare(sendQueue, false, false, false, null);
 
-        while (true) {
-            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-            String messageIn = new String(delivery.getBody());
-            String interestRate = Math.random() * 12 + 3 + "";
-            
-            String ssn = messageIn.split("#")[0].split(":")[1];
-            String messageOut = "interestRate:" + interestRate + "#ssn:" + ssn;
-            System.out.println(" [x] Received by rabbit_bank: '" + messageIn + "'");
-            channel.basicPublish("", QUEUE_NAME_1, null, messageOut.getBytes());
-            System.out.println(" [x] Sent by rabbit_bank: '" + messageOut + "'");
+            QueueingConsumer consumer = new QueueingConsumer(channel);
+            channel.basicConsume(receiveQueue, true, consumer);
+
+            while (!isPleaseStop()) {
+                QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+                String messageIn = new String(delivery.getBody());
+                String interestRate = Math.random() * 12 + 3 + "";
+
+                String ssn = messageIn.split("#")[0].split(":")[1];
+                String messageOut = "interestRate:" + interestRate + "#ssn:" + ssn;
+                System.out.println(" [x] Received by rabbit_bank: '" + messageIn + "'");
+                channel.basicPublish("", sendQueue, null, messageOut.getBytes());
+                System.out.println(" [x] Sent by rabbit_bank: '" + messageOut + "'");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ShutdownSignalException ex) {
+            Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ConsumerCancelledException ex) {
+            Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

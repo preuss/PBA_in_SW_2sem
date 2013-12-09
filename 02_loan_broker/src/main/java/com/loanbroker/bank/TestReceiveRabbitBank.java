@@ -16,7 +16,7 @@ import java.io.IOException;
  * @author Marc
  */
 public class TestReceiveRabbitBank {
-   private static final String QUEUE_NAME = "rabbit_bank5625";
+   private static final String QUEUE_NAME = "rabbit_bankSend";
     /**
      * @param args the command line arguments
      */
