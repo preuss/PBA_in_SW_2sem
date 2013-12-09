@@ -7,8 +7,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
 /**
- * MyCustomFormatter formats the LogRecord as follows:
- * date   level   localized message with parameters
+ * MyCustomFormatter formats the LogRecord as follows: date level localized
+ * message with parameters
  */
 public class MyCustomFormatter extends Formatter {
 

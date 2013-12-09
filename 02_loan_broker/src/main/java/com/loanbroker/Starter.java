@@ -1,5 +1,6 @@
 package com.loanbroker;
 
+import com.loanbroker.bank.JSONMockBank;
 import com.loanbroker.bank.RabbitBank;
 import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;
@@ -18,11 +19,17 @@ public class Starter {
 
 	public static void main(String[] args) {
 		LoggingSetup.setupLogging(Level.DEBUG);
-                String rabbitBankIn = "rabbit_bankRecieve";
-                String rabbitBankOut = "rabbit_bankSend";
-                RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
-//              rabbitBank.start();
-                
+
+		String rabbitBankIn = "rabbit_bankRecieve";
+		String rabbitBankOut = "rabbit_bankSend";
+		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
+//		rabbitBank.start();
+
+		String mockJsonBankIn = "json_bankReceiver";
+		String mockJsonBankOut = "json_bankSend";
+		JSONMockBank jsonMockBank = new JSONMockBank(mockJsonBankIn, mockJsonBankOut);
+//		jsonMockBank.start();
+
 		String bankIn = "02_rating_channel";
 		String bankOut = "02_rating_channel";
 		log.debug("Starting bankhandler: " + bankIn + " >--> " + bankOut);

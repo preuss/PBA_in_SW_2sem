@@ -4,11 +4,10 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 /**
- * User: Preuss
- * Date: 07-12-13
- * Time: 09:40
+ * User: Preuss Date: 07-12-13 Time: 09:40
  */
 public class Logger {
+
 	java.util.logging.Logger log;
 
 	public Logger(java.util.logging.Logger realLogger) {

@@ -3,11 +3,10 @@ package com.loanbroker.logging;
 import java.util.logging.Handler;
 
 /**
- * User: Preuss
- * Date: 09-12-13
- * Time: 00:34
+ * User: Preuss Date: 09-12-13 Time: 00:34
  */
-public class LoggingSetup{
+public class LoggingSetup {
+
 	public static void setupLogging(java.util.logging.Level level) {
 		//static {
 		// Get the root logger

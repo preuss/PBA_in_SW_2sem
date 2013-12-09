@@ -8,12 +8,13 @@ import java.io.IOException;
  * @author Preuss
  */
 public abstract class HandlerThread extends Thread {
+
 	private boolean pleaseStop = false;
 
 	protected final boolean isPleaseStop() {
 		return pleaseStop;
 	}
-	
+
 	public final void pleaseStop() {
 		pleaseStop = true;
 	}

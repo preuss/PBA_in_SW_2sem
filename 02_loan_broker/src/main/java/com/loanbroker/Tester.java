@@ -22,28 +22,27 @@ public class Tester {
 //        CreditHandler cr = new CreditHandler();
 //        cr.getCreditScore();
 
-               /* RecipientHandler rh = new RecipientHandler("Group 2 - Banks", "Group 2 - Recipient List");
-                Serializer ser = new Persister();
-		CanonicalDTO can = new CanonicalDTO();
-		List<BankDTO> banks = new ArrayList<BankDTO>();
+		/* RecipientHandler rh = new RecipientHandler("Group 2 - Banks", "Group 2 - Recipient List");
+		 Serializer ser = new Persister();
+		 CanonicalDTO can = new CanonicalDTO();
+		 List<BankDTO> banks = new ArrayList<BankDTO>();
 		
                 
-		banks.add(new BankDTO("xml", 5.6));
-		banks.add(new BankDTO("xml", 5.6));
-		banks.add(new BankDTO("xml", 5.6));
-		banks.add(new BankDTO("xml", 5.6));
-		can.setBanks(banks);
+		 banks.add(new BankDTO("xml", 5.6));
+		 banks.add(new BankDTO("xml", 5.6));
+		 banks.add(new BankDTO("xml", 5.6));
+		 banks.add(new BankDTO("xml", 5.6));
+		 can.setBanks(banks);
 		
-		OutputStream o = new ByteArrayOutputStream();
-		try {
-			ser.write(can, o);
-			System.out.println("String: " + o.toString());
-		} catch (Exception ex) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
-		}
-                       */
-            
+		 OutputStream o = new ByteArrayOutputStream();
+		 try {
+		 ser.write(can, o);
+		 System.out.println("String: " + o.toString());
+		 } catch (Exception ex) {
+		 Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
+		 }
+		 */
 //            CreditHandler ch = new CreditHandler("02_rating_channel", "02_bank_channel");
 //            ch.getCreditScore();
-        }
+	}
 }

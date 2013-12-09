@@ -1,11 +1,10 @@
 package com.loanbroker.logging;
 
 /**
- * User: Preuss
- * Date: 07-12-13
- * Time: 09:13
+ * User: Preuss Date: 07-12-13 Time: 09:13
  */
 public class Level extends java.util.logging.Level {
+
 	protected Level(String name, int value) {
 		super(name, value);
 	}
@@ -30,7 +29,7 @@ public class Level extends java.util.logging.Level {
 	public static final Level ERROR = new Level("ERROR", 1100);
 
 	// START old
-	public static final Level SEVERE = new Level("SEVERE",1000);
+	public static final Level SEVERE = new Level("SEVERE", 1000);
 	public static final Level WARNING = new Level("WARNING", 900);
 	//END old
 
@@ -58,7 +57,7 @@ public class Level extends java.util.logging.Level {
 	public static final Level L02 = new Level("EMERGENCY", 1300);
 	public static final Level L03 = new Level("CRITICAL", 1200);
 	public static final Level L04 = new Level("ERROR", 1100);
-	public static final Level L05 = new Level("SEVERE",1000);
+	public static final Level L05 = new Level("SEVERE", 1000);
 	public static final Level L06 = new Level("WARNING", 900);
 	public static final Level L07 = new Level("STATUS", 850);
 	public static final Level L08 = new Level("INFO", 800);

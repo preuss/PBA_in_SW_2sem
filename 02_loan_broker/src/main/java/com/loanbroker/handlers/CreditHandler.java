@@ -27,7 +27,6 @@ public class CreditHandler {
 		QUEUE_NAME_OUT = outQueueName;
 	}
 
-	
 	public void getCreditScore() {
 
 		try { // Call Web Service Operation
