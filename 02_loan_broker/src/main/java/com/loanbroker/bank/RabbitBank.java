@@ -12,7 +12,9 @@ import com.rabbitmq.client.QueueingConsumer;
 import java.io.IOException;
 
 /**
- * consumes messages that have ssn#creditScore(int)#loanAmount(double)#loanDuration(int - months)
+ * consumes messages that have the format
+ * ssn#creditScore(int)#loanAmount(double)#loanDuration(int - months)
+ *
  * @author Marc
  */
 public class RabbitBank {
@@ -30,17 +32,17 @@ public class RabbitBank {
         Channel channel = connection.createChannel();
 
         channel.queueDeclare(QUEUE_NAME_1, false, false, false, null);
-        String interestRate = Math.random() * 12 + 3 + "";
-        
-        String messageOut = "";
-        
-    
+
         QueueingConsumer consumer = new QueueingConsumer(channel);
         channel.basicConsume(QUEUE_NAME, true, consumer);
 
         while (true) {
             QueueingConsumer.Delivery delivery = consumer.nextDelivery();
             String messageIn = new String(delivery.getBody());
+            String interestRate = Math.random() * 12 + 3 + "";
+            
+            String ssn = messageIn.split("#")[0].split(":")[1];
+            String messageOut = "interestRate:" + interestRate + "#ssn:" + ssn;
             System.out.println(" [x] Received by rabbit_bank: '" + messageIn + "'");
             channel.basicPublish("", QUEUE_NAME_1, null, messageOut.getBytes());
             System.out.println(" [x] Sent by rabbit_bank: '" + messageOut + "'");

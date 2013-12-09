@@ -27,7 +27,7 @@ public class TestSendRabbitBank {
         Channel channel = connection.createChannel();
         
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-        String messageOut = "Test message";
+        String messageOut = "ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60";
         channel.basicPublish("", QUEUE_NAME, null, messageOut.getBytes());
         System.out.println(" [x] Sent by tester: '" + messageOut + "'");
     }
