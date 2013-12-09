@@ -11,7 +11,8 @@ public class Starter {
 	
 	public static void main(String[] args) {
 		LoggingSetup.setupLogging(Level.DEBUG);
-		
+
+		log.debug("Starting bankhandler");
 		BankHandler bankHandler = new BankHandler();
 	}
 	
