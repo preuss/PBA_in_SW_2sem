@@ -1,0 +1,33 @@
+Log4J
+	FATAL ERROR WARN INFO DEBUG TRACE
+Java Logging API (java.util.logging)
+	SEVERE WARNING INFO CONFIG FINE FINER FINEST
+Apache Commons Logging
+	FATAL ERROR WARN INFO DEBUG TRACE
+SLF4J (Simple Logging Facade for Java)
+	ERROR WARN INFO DEBUG TRACE
+tinyLog
+	ERROR WARNING INFO DEBUG TRACE
+ObjectGuy Java Logging Framework (javalog)
+	fatal critical error warning status info debug
+Jakarta Slide 1.0.16
+	EMERGENCY CRITICAL ERROR WARNING INFO DEBUG
+
+
+Comparing the different levels:
+-------------------------------
+FATAL							ERROR			WARN			INFO 			DEBUG 					TRACE
+										SEVERE	WARNING			INFO	CONFIG 			FINE	FINER	FINEST/TRACE
+FATAL							ERROR			WARN			INFO 			DEBUG 					TRACE
+								ERROR			WARN			INFO 			DEBUG 					TRACE
+								ERROR			WARNING			INFO 			DEBUG 					TRACE
+fatal				critical	error			warning	status	info			debug
+		EMERGENCY	CRITICAL	ERROR			WARNING			INFO			DEBUG
+
+So we need in Java Logging API (JUL) (java.uil.logging):
+--------------------------------------------------------
+We need, FATAL, EMERGENCY, CRITICAL, ERROR, STATUS, DEBUG and TRACE. Where TRACE is just an alias of FINEST.
+
+new level (from 7 levels to 13 levels (not counting alias TRACE)) (With their level value in int):
+[FATAL]	[EMERGENCY]	[CRITICAL]	[ERROR]	SEVERE	WARNING	[STATUS]	INFO	CONFIG	[DEBUG]	FINE	FINER	FINEST/[TRACE]
+[1400]	[1300]		1200		1100	1000	900		850			800		700		[600]	500		400		300
