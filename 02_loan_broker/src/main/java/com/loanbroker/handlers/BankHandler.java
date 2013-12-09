@@ -1,4 +1,4 @@
-package com.loanbroker.loan_broker;
+package com.loanbroker.handlers;
 
 /**
  *
@@ -23,7 +23,16 @@ public class BankHandler {
 
     private final static String BANKLIST_QUEUE = "02_rating_channel";
     private final static String RATING_QUEUE = "02_rating_channel";
+    
+    private String receiveQueue;
+    private String sendQueue;
 
+    public BankHandler(){}
+    
+    public BankHandler(String receiveQueue, String sendQueue){
+    this.receiveQueue = receiveQueue;
+    this.sendQueue = sendQueue;
+    }
     
     private void generateBankList(Integer rating){
         ArrayList<String> banks = new ArrayList<String>();

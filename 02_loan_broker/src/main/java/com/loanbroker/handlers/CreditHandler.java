@@ -1,4 +1,4 @@
-package com.loanbroker.loan_broker;
+package com.loanbroker.handlers;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;

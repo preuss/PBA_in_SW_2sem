@@ -1,6 +1,7 @@
 package com.loanbroker.loan_broker;
 
 import com.loanbroker.loan_broker.logging.*;
+import com.loanbroker.handlers.BankHandler;
 
 /**
  * @author Preuss
