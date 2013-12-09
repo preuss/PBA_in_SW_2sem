@@ -25,9 +25,7 @@ import org.simpleframework.xml.core.Persister;
  *
  * @author Marc
  */
-public class RecipientHandler extends Thread {
-
-	private boolean pleaseStop = false;
+public class RecipientHandler extends HandlerThread {
 
 	private String QUEUE_NAME;
 	private String QUEUE_NAME_BANK_1;
@@ -55,7 +53,7 @@ public class RecipientHandler extends Thread {
 	}
 
 	@Override
-	public void run() {
+	public void doRun() {
 		try {
 			Connection conn = getConnection();
 			Channel chan = conn.createChannel();
@@ -64,13 +62,13 @@ public class RecipientHandler extends Thread {
 			QueueingConsumer consumer = new QueueingConsumer(chan);
 			chan.basicConsume(QUEUE_NAME, true, consumer);
 			//start polling messages
-			while (pleaseStop == false) {
+			while (isPleaseStop() == false) {
 				String consumerTag = consumer.getConsumerTag();
 				System.out.println(" [-] ConsumerTag: '" + consumerTag + "'");
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 				String xmlStr = delivery.getBody().toString();
 				processBankOutput(xmlStr);
-		//CanonicalDTO dto = new String(delivery.getBody());
+				//CanonicalDTO dto = new String(delivery.getBody());
 				//System.out.println(" [x] Received '" + message + "'");
 			}
 		} catch (IOException ex) {
@@ -114,20 +112,6 @@ public class RecipientHandler extends Thread {
 			return null;
 		}
 		return bankQueues.get(bankName);
-	}
-
-	public void pleaseStop() {
-		pleaseStop = true;
-	}
-
-	private Connection getConnection() throws IOException {
-		ConnectionFactory connfac = new ConnectionFactory();
-		connfac.setHost("datdb.cphbusiness.dk");
-		connfac.setPort(5672);
-		connfac.setUsername("student");
-		connfac.setPassword("cph");
-		Connection connection = connfac.newConnection();
-		return connection;
 	}
 
 	public void sendRecipients() throws IOException {
