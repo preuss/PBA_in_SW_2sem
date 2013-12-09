@@ -22,16 +22,20 @@ public class Starter {
 		String bankOut = "02_rating_channel";
 		log.debug("Starting bankhandler: " + bankIn + " >--> " + bankOut);
 		BankHandler bankHandler = new BankHandler(bankIn, bankOut);
-		bankHandler.start();
-		
-        String recipientIn = "Group2_recipientIn";
-        Map<String, String> recipientOut = new HashMap<>();
-        recipientOut.put("xml", "xml_channel");
-        recipientOut.put("json", "json_channel");
-        recipientOut.put("rabbitmq", "rabbitmq_channel");
-        recipientOut.put("webservice", "websercice_channel");
+//		bankHandler.start();
+
+		String recipientIn = "Group2_recipientIn";
+		Map<String, String> recipientOut = new HashMap<>();
+		recipientOut.put("xml", "xml_channel");
+		recipientOut.put("json", "json_channel");
+		recipientOut.put("rabbitmq", "rabbitmq_channel");
+		recipientOut.put("webservice", "websercice_channel");
+		for (Iterator<Map.Entry<String, String>> it = recipientOut.entrySet().iterator(); it.hasNext();) {
+			Map.Entry<String, String> entry = it.next();
+			log.debug("Starting recipientHandler: " + bankIn + " >--> " + entry.getValue() + "(" + entry.getKey() + ")");
+		}
 		RecipientHandler recipientHandler = new RecipientHandler(recipientIn, recipientOut);
-		recipientHandler.start();
+		//		recipientHandler.start();
 	}
 
 }
