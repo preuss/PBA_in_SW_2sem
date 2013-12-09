@@ -4,6 +4,9 @@ import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;
 import com.loanbroker.logging.LoggingSetup;
 import com.loanbroker.handlers.BankHandler;
+import com.loanbroker.handlers.RecipientHandler;
+import java.util.HashMap;
+import java.util.*;
 
 /**
  * @author Preuss
@@ -28,7 +31,7 @@ public class Starter {
         recipientOut.put("rabbitmq", "rabbitmq_channel");
         recipientOut.put("webservice", "websercice_channel");
 		RecipientHandler recipientHandler = new RecipientHandler(recipientIn, recipientOut);
-		//recipientHandler.start();
+		recipientHandler.start();
 	}
 
 }
