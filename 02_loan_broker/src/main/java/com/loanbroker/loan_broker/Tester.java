@@ -1,5 +1,6 @@
 package com.loanbroker.loan_broker;
 
+import com.loanbroker.handlers.CreditHandler;
 import com.loanbroker.loan_broker.models.BankDTO;
 import com.loanbroker.loan_broker.models.CanonicalDTO;
 import java.io.ByteArrayOutputStream;
@@ -42,7 +43,7 @@ public class Tester {
 		}
                        */
             
-            CreditHandler ch = new CreditHandler("02_rating_channel", "02_bank_channel");
-            ch.getCreditScore();
+//            CreditHandler ch = new CreditHandler("02_rating_channel", "02_bank_channel");
+//            ch.getCreditScore();
         }
 }
