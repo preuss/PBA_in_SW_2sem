@@ -19,7 +19,6 @@ public class TestSendRabbitBank {
     private static final String QUEUE_NAME = "rabbit_bank2556";
 
     public static void main(String[] argv) throws IOException {
-       // new RabbitBank(); 
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("datdb.cphbusiness.dk");
         factory.setUsername("student");

@@ -12,10 +12,10 @@ import com.rabbitmq.client.QueueingConsumer;
 import java.io.IOException;
 
 /**
- * consumes messages that have ssn#creditScore(int)#loanAmount(double)#loanDuration(int - months)
+ *
  * @author Marc
  */
-public class RabbitBank {
+public class JSONMockBank {
 
     private static final String QUEUE_NAME = "rabbit_bank2556";
     private static final String QUEUE_NAME_1 = "rabbit_bank5625";
@@ -30,10 +30,7 @@ public class RabbitBank {
         Channel channel = connection.createChannel();
 
         channel.queueDeclare(QUEUE_NAME_1, false, false, false, null);
-        String interestRate = Math.random() * 12 + 3 + "";
-        
-        String messageOut = "";
-        
+        String messageOut = "rabbit bank";
     
         QueueingConsumer consumer = new QueueingConsumer(channel);
         channel.basicConsume(QUEUE_NAME, true, consumer);
