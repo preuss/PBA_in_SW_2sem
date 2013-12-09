@@ -20,6 +20,15 @@ public class Starter {
 		log.debug("Starting bankhandler: " + bankIn + " >--> " + bankOut);
 		BankHandler bankHandler = new BankHandler(bankIn, bankOut);
 		bankHandler.start();
+		
+        String recipientIn = "Group2_recipientIn";
+        Map<String, String> recipientOut = new HashMap<>();
+        recipientOut.put("xml", "xml_channel");
+        recipientOut.put("json", "json_channel");
+        recipientOut.put("rabbitmq", "rabbitmq_channel");
+        recipientOut.put("webservice", "websercice_channel");
+		RecipientHandler recipientHandler = new RecipientHandler(recipientIn, recipientOut);
+		//recipientHandler.start();
 	}
 
 }

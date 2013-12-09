@@ -48,7 +48,8 @@ public class RecipientHandler extends HandlerThread {
 //        ques.put("rabbitmq", "rabbitmq_channel");
 //        ques.put("webservice", "websercice_channel");
 //    }
-	public RecipientHandler(Map<String, String> bankQueues) {
+	public RecipientHandler(String queueIn, Map<String, String> bankQueues) {
+		this.QUEUE_NAME = queueIn;
 		this.bankQueues = bankQueues;
 	}
 
