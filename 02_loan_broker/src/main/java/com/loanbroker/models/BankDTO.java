@@ -1,4 +1,4 @@
-package com.loanbroker.loan_broker.models;
+package com.loanbroker.models;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;

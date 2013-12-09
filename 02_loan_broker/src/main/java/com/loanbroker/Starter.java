@@ -1,6 +1,9 @@
-package com.loanbroker.loan_broker;
+package com.loanbroker;
 
-import com.loanbroker.loan_broker.logging.*;
+import com.loanbroker.logging.Level;
+import com.loanbroker.logging.Logger;
+import com.loanbroker.logging.LoggingSetup;
+import com.loanbroker.handlers.BankHandler;
 import com.loanbroker.handlers.BankHandler;
 
 /**

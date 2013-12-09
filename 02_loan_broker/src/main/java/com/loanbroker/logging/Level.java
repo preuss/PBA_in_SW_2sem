@@ -1,4 +1,4 @@
-package com.loanbroker.loan_broker.logging;
+package com.loanbroker.logging;
 
 /**
  * User: Preuss

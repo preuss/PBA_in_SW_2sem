@@ -1,7 +1,7 @@
 package com.loanbroker.handlers;
 
-import com.loanbroker.loan_broker.models.CanonicalDTO;
-import com.loanbroker.loan_broker.models.BankDTO;
+import com.loanbroker.models.CanonicalDTO;
+import com.loanbroker.models.BankDTO;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;

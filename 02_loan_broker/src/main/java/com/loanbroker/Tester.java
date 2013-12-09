@@ -1,8 +1,8 @@
-package com.loanbroker.loan_broker;
+package com.loanbroker;
 
 import com.loanbroker.handlers.CreditHandler;
-import com.loanbroker.loan_broker.models.BankDTO;
-import com.loanbroker.loan_broker.models.CanonicalDTO;
+import com.loanbroker.models.BankDTO;
+import com.loanbroker.models.CanonicalDTO;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;

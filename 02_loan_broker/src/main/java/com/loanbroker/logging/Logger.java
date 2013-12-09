@@ -1,4 +1,4 @@
-package com.loanbroker.loan_broker.logging;
+package com.loanbroker.logging;
 
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
