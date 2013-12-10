@@ -46,6 +46,12 @@ public class RabbitBank extends HandlerThread {
 
 	}
 
+	/**
+	 * Input Message Format:
+	 *		ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60
+	 * Output Message Format:
+	 *		interestRate:5.8#ssn:123456-1234;
+	 */
 	@Override
 	protected void doRun() {
 		try {
