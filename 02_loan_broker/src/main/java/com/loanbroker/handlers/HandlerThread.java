@@ -1,13 +1,13 @@
 package com.loanbroker.handlers;
 
+import com.loanbroker.logging.Level;
+import com.loanbroker.logging.Logger;
 import com.loanbroker.models.CanonicalDTO;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -15,6 +15,8 @@ import org.simpleframework.xml.core.Persister;
  * @author Preuss
  */
 public abstract class HandlerThread extends Thread {
+
+	private final Logger log = Logger.getLogger(HandlerThread.class);
 
 	private boolean pleaseStop = false;
 
@@ -54,8 +56,8 @@ public abstract class HandlerThread extends Thread {
 		Serializer serializer = new Persister();
 		try {
 			dto = serializer.read(CanonicalDTO.class, xmlString);
-		} catch (Exception ex) {
-			Logger.getLogger(HandlerThread.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (Exception e) {
+			log.log(Level.SEVERE, null, e);
 		}
 		return dto;
 	}

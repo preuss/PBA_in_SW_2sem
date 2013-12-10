@@ -45,21 +45,10 @@ public class JsonTranslator extends HandlerThread {
             QueueingConsumer.Delivery delivery = consumer.nextDelivery();
             String message = new String(delivery.getBody());
             System.out.println("Received at XmlTranslator" + message);
-            CanonicalDTO dto = convertStringToDTO(message);
+            CanonicalDTO dto = convertStringToDto(message);
             System.out.println("the score is " + dto.getCreditScore());
             sendRequestToXmlBank(translateMessage(dto));
         }
-    }
-
-    private CanonicalDTO convertStringToDTO(String message) {
-        Serializer serializer = new Persister();
-        CanonicalDTO dto = null;
-        try {
-            dto = serializer.read(CanonicalDTO.class, message);
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-        return dto;
     }
 
     private String translateMessage(CanonicalDTO dto) {
