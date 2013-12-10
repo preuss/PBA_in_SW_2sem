@@ -79,7 +79,9 @@ public class CreditHandler {
 			Logger.getLogger(CreditHandler.class.getName()).log(Level.SEVERE, null, ex);
 		} catch (InterruptedException ex) {
 			Logger.getLogger(CreditHandler.class.getName()).log(Level.SEVERE, null, ex);
-		}
+		} catch (Exception ex) {
+                Logger.getLogger(CreditHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
 		channel.close();
 		connection.close();
 
