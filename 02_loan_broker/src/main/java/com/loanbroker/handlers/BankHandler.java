@@ -90,29 +90,6 @@ public class BankHandler extends HandlerThread {
         System.out.println(" [x] Sent '" + message + "'");
     }
 
-    private String convertDtoToString(CanonicalDTO dto) {
-        String value = null;
-        try {
-            Serializer serializer = new Persister();
-            OutputStream outputStream = new ByteArrayOutputStream();
-            serializer.write(dto, outputStream);
-            value = outputStream.toString();
-        } catch (Exception ex) {
-        }
-        return value;
-    }
-
-    private CanonicalDTO convertStringToDto(String xmlString) {
-        Serializer serializer = new Persister();
-        CanonicalDTO dto = null;
-        try {
-            dto = serializer.read(CanonicalDTO.class, xmlString);
-        } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(BankHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return dto;
-    }
-
     @Override
     protected void doRun() {
         while (isPleaseStop() == false) {
