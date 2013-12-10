@@ -19,12 +19,12 @@ import java.util.logging.Logger;
 public class CreditHandler {
 
 	//private final static String QUEUE_NAME = "02_rating_channel";
-	private final String QUEUE_NAME_IN;
-	private final String QUEUE_NAME_OUT;
+	private final String queueIn;
+	private final String queueOut;
 
 	public CreditHandler(String inQueueName, String outQueueName) {
-		QUEUE_NAME_IN = inQueueName;
-		QUEUE_NAME_OUT = outQueueName;
+		queueIn = inQueueName;
+		queueOut = outQueueName;
 	}
 
 	public void getCreditScore() {
@@ -59,7 +59,7 @@ public class CreditHandler {
 		Connection connection = connfac.newConnection();
 		Channel channel = connection.createChannel();
 
-		channel.queueDeclare(QUEUE_NAME_OUT, false, false, false, null);
+		channel.queueDeclare(queueOut, false, false, false, null);
 		String message = "" + rating;
 		System.out.println(" [x] Sent '" + message + "'");
 		String corrId = generateCorrelationID();
@@ -68,7 +68,7 @@ public class CreditHandler {
 		propBuilder.correlationId(corrId);
 		propBuilder.replyTo(replyTo);
 		BasicProperties props = propBuilder.build();
-		channel.basicPublish("", QUEUE_NAME_OUT, props, message.getBytes());
+		channel.basicPublish("", queueOut, props, message.getBytes());
 
 		BankHandler bh = new BankHandler();
 		try {
