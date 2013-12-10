@@ -74,4 +74,11 @@ public class CanonicalDTO {
 	public void setBanks(List<BankDTO> banks) {
 		this.banks = new ArrayList<BankDTO>(banks);
 	}
+	
+	public boolean addBank(BankDTO bank) {
+		if(this.banks == null) {
+			this.banks = new ArrayList<BankDTO>(banks);
+		}
+		return this.banks.add(bank);
+	}
 }
