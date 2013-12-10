@@ -1,5 +1,6 @@
 package com.loanbroker;
 
+import com.loanbroaker.translators.XmlTranslator;
 import com.loanbroker.bank.JSONMockBank;
 import com.loanbroker.bank.RabbitBank;
 import com.loanbroker.logging.Level;
@@ -48,6 +49,9 @@ public class Starter {
 		}
 		RecipientHandler recipientHandler = new RecipientHandler(recipientIn, recipientOut);
 		//		recipientHandler.start();
+                
+                XmlTranslator xmlTranslator = new XmlTranslator("02_bankXML", "02_xml_reply_queue");
+//                xmlTranslator.start();
 	}
 
 }
