@@ -89,8 +89,8 @@ public class BankHandler extends HandlerThread {
         channel.basicPublish("", BANKLIST_QUEUE, props, message.getBytes());
         System.out.println(" [x] Sent '" + message + "'");
     }
-    
-      private String convertDtoToString(CanonicalDTO dto) {
+
+    private String convertDtoToString(CanonicalDTO dto) {
         String value = null;
         try {
             Serializer serializer = new Persister();
@@ -101,8 +101,8 @@ public class BankHandler extends HandlerThread {
         }
         return value;
     }
-      
-        private CanonicalDTO convertStringToDto(String xmlString) {
+
+    private CanonicalDTO convertStringToDto(String xmlString) {
         Serializer serializer = new Persister();
         CanonicalDTO dto = null;
         try {
