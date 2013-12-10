@@ -29,8 +29,8 @@ public class BankHandler extends HandlerThread {
 
     private final Logger log = Logger.getLogger(BankHandler.class);
 
-    private final static String BANKLIST_QUEUE = "02_rating_channel";
-    private final static String RATING_QUEUE = "02_rating_channel";
+//    private final static String BANKLIST_QUEUE = "02_rating_channel";
+//    private final static String RATING_QUEUE = "02_rating_channel";
 
     private String receiveQueue;
     private String sendQueue;
@@ -66,10 +66,10 @@ public class BankHandler extends HandlerThread {
     public void receiveCreditScore() throws IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException, Exception {
         Channel chan = getConnection().createChannel();
         //Declare a queue
-        chan.queueDeclare(RATING_QUEUE, false, false, false, null);
+        chan.queueDeclare(receiveQueue, false, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
         QueueingConsumer consumer = new QueueingConsumer(chan);
-        chan.basicConsume(RATING_QUEUE, true, consumer);
+        chan.basicConsume(receiveQueue, true, consumer);
         //start polling messages
         while (true) {
             QueueingConsumer.Delivery delivery = consumer.nextDelivery();
@@ -83,10 +83,10 @@ public class BankHandler extends HandlerThread {
 
     private void sendBanks(CanonicalDTO dto) throws IOException {
         Channel channel = getConnection().createChannel();
-        channel.queueDeclare(BANKLIST_QUEUE, false, false, false, null);
+        channel.queueDeclare(sendQueue, false, false, false, null);
         String message = convertDtoToString(dto);
         AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().replyTo(channel.queueDeclare().getQueue()).build();
-        channel.basicPublish("", BANKLIST_QUEUE, props, message.getBytes());
+        channel.basicPublish("", sendQueue, props, message.getBytes());
         System.out.println(" [x] Sent '" + message + "'");
     }
 
