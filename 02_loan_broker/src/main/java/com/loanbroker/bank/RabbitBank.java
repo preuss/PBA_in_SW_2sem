@@ -89,5 +89,4 @@ public class RabbitBank extends HandlerThread {
 			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-
 }

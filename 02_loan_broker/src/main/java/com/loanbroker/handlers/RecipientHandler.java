@@ -27,18 +27,18 @@ import org.simpleframework.xml.core.Persister;
  */
 public class RecipientHandler extends HandlerThread {
 
-	private String QUEUE_NAME;
-	private String QUEUE_NAME_BANK_1;
+	private String queueIn;
+/*	private String QUEUE_NAME_BANK_1;
 	private String QUEUE_NAME_BANK_2;
 	private String QUEUE_NAME_BANK_3;
-	private String QUEUE_NAME_BANK_4;
+	private String QUEUE_NAME_BANK_4;*/
 	/*	private final String QUEUE_NAME ="02_recipient_list_channel";
 	 private final String QUEUE_NAME_BANK_1 = "02_bank_xml_channel";
 	 private final String QUEUE_NAME_BANK_2 = "02_bank_json_channel";
 	 private final String QUEUE_NAME_BANK_3 = "02_bank_rabbitmq_channel";
 	 private final String QUEUE_NAME_BANK_4 = "02_bank_webservice_channel";*/
 
-	private Map<String, String> bankQueues;
+	private Map<String, String> queueOutBanks;
 
 //    public RecipientHandler() {
 //        QUEUE_NAME = "reciepidequeu";
@@ -49,8 +49,8 @@ public class RecipientHandler extends HandlerThread {
 //        ques.put("webservice", "websercice_channel");
 //    }
 	public RecipientHandler(String queueIn, Map<String, String> bankQueues) {
-		this.QUEUE_NAME = queueIn;
-		this.bankQueues = bankQueues;
+		this.queueIn = queueIn;
+		this.queueOutBanks = bankQueues;
 	}
 
 	@Override
@@ -58,10 +58,10 @@ public class RecipientHandler extends HandlerThread {
 		try {
 			Connection conn = getConnection();
 			Channel chan = conn.createChannel();
-			chan.queueDeclare(QUEUE_NAME, false, false, false, null);
+			chan.queueDeclare(queueIn, false, false, false, null);
 			System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 			QueueingConsumer consumer = new QueueingConsumer(chan);
-			chan.basicConsume(QUEUE_NAME, true, consumer);
+			chan.basicConsume(queueIn, true, consumer);
 			//start polling messages
 			while (isPleaseStop() == false) {
 				String consumerTag = consumer.getConsumerTag();
@@ -109,20 +109,20 @@ public class RecipientHandler extends HandlerThread {
 	}
 
 	private String getBankChannelName(String bankName) {
-		if (!bankQueues.containsKey(bankName)) {
+		if (!queueOutBanks.containsKey(bankName)) {
 			return null;
 		}
-		return bankQueues.get(bankName);
+		return queueOutBanks.get(bankName);
 	}
 
 	public void sendRecipients() throws IOException {
 		Connection connection = getConnection();
 		Channel channel = connection.createChannel();
 
-		channel.queueDeclare(QUEUE_NAME, true, false, false, null);
+		channel.queueDeclare(queueIn, true, false, false, null);
 		String message = "Hello World!";
 		for (int i = 0; i < Integer.MAX_VALUE; i++) {
-			channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+			channel.basicPublish("", queueIn, null, message.getBytes());
 		}
 		System.out.println(" [x] Sent '" + message + "'");
 

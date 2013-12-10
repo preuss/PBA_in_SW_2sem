@@ -49,9 +49,14 @@ public class Starter {
 		}
 		RecipientHandler recipientHandler = new RecipientHandler(recipientIn, recipientOut);
 		//		recipientHandler.start();
-                
-                XmlTranslator xmlTranslator = new XmlTranslator("02_bankXML", "02_xml_reply_queue");
+
+		XmlTranslator xmlTranslator = new XmlTranslator("02_bankXML", "02_xml_reply_queue");
 //                xmlTranslator.start();
+
+		String aggPeepIn = "aggPeepIn";
+		String aggIn = "aggIn";
+		String aggOut = "aggOut";
+		Aggregator aggregator = new Aggregator(aggPeepIn, aggIn, aggOut);
 	}
 
 }

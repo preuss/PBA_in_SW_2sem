@@ -24,6 +24,7 @@ public class Aggregator extends HandlerThread {
 
 	private Logger log = Logger.getLogger(Aggregator.class);
 
+	private String peepQueueIn;
 	private String queueIn;
 	private String queueOut;
 
@@ -31,7 +32,8 @@ public class Aggregator extends HandlerThread {
 	private HashMap<String, List<BankDTO>> incomingBanks = new HashMap();
 	private HashMap<String, Integer> timeouts = new HashMap();
 
-	public Aggregator(String queueIn, String queueOut) {
+	public Aggregator(String peepQueueIn, String queueIn, String queueOut) {
+		this.peepQueueIn = peepQueueIn;
 		this.queueIn = queueIn;
 		this.queueOut = queueOut;
 	}
@@ -54,6 +56,20 @@ public class Aggregator extends HandlerThread {
 			channel.queueDeclare(queueName, false, false, false, null);
 		}
 		return channel;
+	}
+
+	private CanonicalDTO receiveAllDtoMessage() throws IOException, ConsumerCancelledException, ShutdownSignalException, InterruptedException, Exception {
+		CanonicalDTO dto = null;
+
+		Channel channel = createChannel(peepQueueIn);
+		QueueingConsumer consumer = new QueueingConsumer(channel);
+		channel.basicConsume(peepQueueIn, true, consumer);
+		QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+
+		String xmlStr = delivery.getBody().toString();
+		Serializer serializer = new Persister();
+		dto = serializer.read(CanonicalDTO.class, xmlStr);
+		return dto;
 	}
 
 	private CanonicalDTO receiveMessage() throws IOException, ConsumerCancelledException, ShutdownSignalException, InterruptedException, Exception {
@@ -120,14 +136,22 @@ public class Aggregator extends HandlerThread {
 		}
 	}
 
+	private void cleanupMessages() {
+		// TODO: Need to use timeout.
+	}
+
 	@Override
 	protected void doRun() {
 		while (!isPleaseStop()) {
 			try {
+				CanonicalDTO allDto = receiveAllDtoMessage();
+				addCanon(allDto);
+
 				CanonicalDTO receiveDto = receiveMessage();
 				addBankToMaps(receiveDto);
+
 				sendAllSendableMessages();
-				//cleanup();
+				cleanupMessages();
 			} catch (ConsumerCancelledException e) {
 				log.log(Level.SEVERE, null, e);
 			} catch (ShutdownSignalException e) {
@@ -140,4 +164,7 @@ public class Aggregator extends HandlerThread {
 		}
 	}
 
+	private void addCanon(CanonicalDTO allDto) {
+		canons.put(allDto.getSsn(), allDto);
+	}
 }
