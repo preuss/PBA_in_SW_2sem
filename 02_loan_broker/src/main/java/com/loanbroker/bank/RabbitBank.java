@@ -16,9 +16,11 @@ import com.rabbitmq.client.ShutdownSignalException;
 import java.io.IOException;
 
 /**
- * consumes messages that have the format
- * ssn#creditScore(int)#loanAmount(double)#loanDuration(int - months)
- *
+ * consumes messages that have the format:
+ * ssn:xxxxxx-xxxx#creditScore:y#loanAmount:z#loanDuration:a
+ * loanDuration is expressed in months
+ * listens on the channel: 02_rabbitBankRecieve
+ * sends on the channel: 02_rabbitBankSend
  * @author Marc
  */
 public class RabbitBank extends HandlerThread {
@@ -37,8 +39,8 @@ public class RabbitBank extends HandlerThread {
 	}
 
 	public static void main(String[] argv) throws IOException, InterruptedException {
-		String rabbitBankIn = "rabbit_bankRecieve";
-		String rabbitBankOut = "rabbit_bankSend";
+		final String rabbitBankIn = "02_rabbitBankRecieve";
+		final String rabbitBankOut = "02_rabbitBankSend";
 		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
 		rabbitBank.start();
 
@@ -62,13 +64,14 @@ public class RabbitBank extends HandlerThread {
 			while (!isPleaseStop()) {
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 				String messageIn = new String(delivery.getBody());
-				String interestRate = Math.random() * 12 + 3 + "";
+                                // calculate interest rate
+				String interestRate = (Math.random() * (12 -3) + 3) + "";
 
 				String ssn = messageIn.split("#")[0].split(":")[1];
 				String messageOut = "interestRate:" + interestRate + "#ssn:" + ssn;
-				System.out.println(" [x] Received by rabbit_bank: '" + messageIn + "'");
+				System.out.println(" [x] Received by 02_rabbitBank: '" + messageIn + "'");
 				channel.basicPublish("", sendQueue, null, messageOut.getBytes());
-				System.out.println(" [x] Sent by rabbit_bank: '" + messageOut + "'");
+				System.out.println(" [x] Sent by 02_rabbitBank: '" + messageOut + "'");
 			}
 		} catch (IOException ex) {
 			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
