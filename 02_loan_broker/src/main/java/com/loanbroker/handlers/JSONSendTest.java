@@ -29,7 +29,9 @@ public class JSONSendTest {
 		Channel channel = connection.createChannel();
 
 		channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
-		String queueName = channel.queueDeclare().getQueue();
+                String queueName = "Kender du hende der Arne";
+                channel.queueDeclare(queueName, false, false, false, null);
+		
 		channel.queueBind(queueName, EXCHANGE_NAME, "");
 		String messageOut = "{\"ssn\":1605789787,\"creditScore\":699,\"loanAmount\":10.0,\"loanDuration\":360}";
 		BasicProperties.Builder props = new BasicProperties().builder();

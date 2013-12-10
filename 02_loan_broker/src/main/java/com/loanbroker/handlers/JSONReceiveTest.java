@@ -27,10 +27,12 @@ public class JSONReceiveTest {
 		Connection connection = factory.newConnection();
 		Channel channel = connection.createChannel();
 
+                
 		channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
-		String queueName = "";
+                String queueName = "Kender du hende der Arne";
+                channel.queueDeclare(queueName, false, false, false, null);
+		
 		channel.queueBind(queueName, EXCHANGE_NAME, "");
-
 		QueueingConsumer consumer = new QueueingConsumer(channel);
 		channel.basicConsume(queueName, true, consumer);
 
