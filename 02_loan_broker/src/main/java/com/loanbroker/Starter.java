@@ -9,6 +9,7 @@ import com.loanbroker.logging.LoggingSetup;
 import com.loanbroker.handlers.BankHandler;
 import com.loanbroker.handlers.CreditHandler;
 import com.loanbroker.handlers.RecipientHandler;
+import com.loanbroker.translators.RabbitmqTranslator;
 import java.util.HashMap;
 import java.util.*;
 
@@ -23,8 +24,9 @@ public class Starter {
 		LoggingSetup.setupLogging(Level.DEBUG);
 
 		String rabbitBankIn = "Group2.RabbitBank.Receive";
-		String rabbitBankOut = "Group2.RabbitBank.Send";
-		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
+//		String rabbitBankOut = "Group2.RabbitBank.Send";
+//		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
+		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn);
 //		rabbitBank.start();
 
 		/*
@@ -71,6 +73,11 @@ public class Starter {
 		String jsonTranslatorReplyTo = "Group2.Normalizer.Json";
 		JsonTranslator jsonTranslator = new JsonTranslator(jsonTranslatorIn, jsonTranslatorReplyTo);
 //		jsonTranslator.start();
+		
+		String rabbitmqTranslatorIn ="Group2.Translator.Rabbitmq";
+		String rabbitmqTranslatorReplyTo = "Group2.Normalizer.Rabbitmq";
+		RabbitmqTranslator rabbitTranslator = new RabbitmqTranslator(rabbitmqTranslatorIn, rabbitmqTranslatorReplyTo);
+//		rabbitTranslator.start();
 
 		Map<String, String> normalizerBankIn = new HashMap<>();
 		normalizerBankIn.put("xml", "Group2.Normalizer.Xml");
