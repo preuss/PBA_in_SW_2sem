@@ -1,5 +1,6 @@
 package com.loanbroker;
 
+import com.loanbroaker.translators.JsonTranslator;
 import com.loanbroaker.translators.XmlTranslator;
 import com.loanbroker.bank.JSONMockBank;
 import com.loanbroker.bank.RabbitBank;
@@ -22,48 +23,64 @@ public class Starter {
 	public static void main(String[] args) {
 		LoggingSetup.setupLogging(Level.DEBUG);
 
-		String rabbitBankIn = "rabbit_bankReceive";
-		String rabbitBankOut = "rabbit_bankSend";
+		String rabbitBankIn = "Group2.RabbitBank.Receive";
+		String rabbitBankOut = "Group2.RabbitBank.Send";
 		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
 //		rabbitBank.start();
 
-		String mockJsonBankIn = "json_bankReceive";
-		String mockJsonBankOut = "json_bankSend";
+		/*
+		String mockJsonBankIn = "Group2.JsonBank.Receive";
+		String mockJsonBankOut = "Group2.JsonBank.Send";
 		JSONMockBank jsonMockBank = new JSONMockBank(mockJsonBankIn, mockJsonBankOut);
 //		jsonMockBank.start();
-
-		String creditIn = "creditReceive";
-		String creditOut = "creditSend";
+*/
+				
+		String creditIn = "Group2.CreditHandler.Receive";
+		String creditOut = "Group2.CreditHandler.Send";
 		CreditHandler creditHandler = new CreditHandler(creditIn, creditOut);
 //		creditHandler.start();
 
-		String bankIn = "ratingReceive";
-		String bankOut = "ratingSend";
+		String bankIn = "Group2.BankHandler.Receive";
+		String bankOut = "Group2.BankHandler.Send";
 		log.debug("Starting bankhandler: " + bankIn + " >--> " + bankOut);
 		BankHandler bankHandler = new BankHandler(bankIn, bankOut);
 //		bankHandler.start();
 
-		String recipientIn = "recipientReceive";
+		String recipientIn = "Group2.RecipientHandler.Receive";
 		Map<String, String> recipientOut = new HashMap<>();
-		recipientOut.put("xml", "receipientSend_xml");
-		recipientOut.put("json", "receipientSend_json");
-		recipientOut.put("rabbitmq", "receipientSend?rabbitmq");
-		recipientOut.put("webservice", "receipientSend_webservice");
+		recipientOut.put("xml", "Group2.Translator.Xml");
+		recipientOut.put("json", "Group2.Translator.Json");
+		recipientOut.put("rabbitmq", "Group2.Translator.Rabbitmq");
+//		recipientOut.put("webservice", "Group2.RecipientHandler.Webservice.Send");
 		for (Iterator<Map.Entry<String, String>> it = recipientOut.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<String, String> entry = it.next();
-			log.debug("Starting recipientHandler: " + bankIn + " >--> " + entry.getValue() + "(" + entry.getKey() + ")");
+			//log.debug("Starting recipientHandler: " + bankIn + " >--> " + entry.getValue() + "(" + entry.getKey() + ")");
 		}
 		RecipientHandler recipientHandler = new RecipientHandler(recipientIn, recipientOut);
 //		recipientHandler.start();
 
-		XmlTranslator xmlTranslator = new XmlTranslator("02_bankXML", "02_xml_reply_queue");
+		XmlTranslator xmlTranslator = new XmlTranslator("Group2.Translator.Xml", "Group2.Normalizer.Xml");
 //		xmlTranslator.start();
+		
+		String jsonTranslatorIn = "Group2.Translator.Json";
+		String jsonTranslatorReplyTo = "Group2.Normalizer.Json";
+		JsonTranslator jsonTranslator = new JsonTranslator(jsonTranslatorIn, jsonTranslatorReplyTo);
+//		jsonTranslator.start();
 
 		String aggPeepIn = "aggPeepIn";
 		String aggIn = "aggIn";
 		String aggOut = "aggOut";
 		Aggregator aggregator = new Aggregator(aggPeepIn, aggIn, aggOut);
 //		aggregator.start();
+
+		Map<String, String> normalizerBankIn = new HashMap<>();
+		normalizerBankIn.put("xml", "Group2.Normalizer.Xml");
+		normalizerBankIn.put("json", "Group2.Normalizer.Json");
+		normalizerBankIn.put("rabbitmq", "Group2.Normalizer.Rabbitmq");
+//		normalizerBankIn.put("webservice", "receipientSend_webservice");
+		String normalizerOut = "recipientReceive";
+		Normalizer normalizer = new Normalizer(normalizerBankIn, normalizerOut);
+//		normalizer.start();
 	}
 
 }
