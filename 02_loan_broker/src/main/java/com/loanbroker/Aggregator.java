@@ -38,26 +38,6 @@ public class Aggregator extends HandlerThread {
 		this.queueOut = queueOut;
 	}
 
-	private boolean queueExist(Channel channel, String queueName) {
-		boolean retVal = true;
-		try {
-			channel.queueDeclarePassive(queueName);
-			retVal = false;
-		} catch (IOException e) {
-			log.log(Level.SEVERE, null, e);
-		}
-		return retVal;
-	}
-
-	private Channel createChannel(String queueName) throws IOException {
-		Connection conn = getConnection();
-		Channel channel = conn.createChannel();
-		if (!queueExist(channel, queueName)) {
-			channel.queueDeclare(queueName, false, false, false, null);
-		}
-		return channel;
-	}
-
 	private CanonicalDTO receiveAllDtoMessage() throws IOException, ConsumerCancelledException, ShutdownSignalException, InterruptedException, Exception {
 		CanonicalDTO dto = null;
 

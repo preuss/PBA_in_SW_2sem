@@ -3,6 +3,7 @@ package com.loanbroker.handlers;
 import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;
 import com.loanbroker.models.CanonicalDTO;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +37,26 @@ public abstract class HandlerThread extends Thread {
 		connfac.setPassword("cph");
 		Connection connection = connfac.newConnection();
 		return connection;
+	}
+	
+	protected final Channel createChannel(String queueName) throws IOException {
+		Connection conn = getConnection();
+		Channel channel = conn.createChannel();
+		if (!queueExist(channel, queueName)) {
+			channel.queueDeclare(queueName, false, false, false, null);
+		}
+		return channel;
+	}
+	
+	protected final boolean queueExist(Channel channel, String queueName) {
+		boolean retVal = true;
+		try {
+			channel.queueDeclarePassive(queueName);
+			retVal = false;
+		} catch (IOException e) {
+			log.log(Level.SEVERE, null, e);
+		}
+		return retVal;
 	}
 
 	protected final String convertDtoToString(CanonicalDTO canonicalDTO) {

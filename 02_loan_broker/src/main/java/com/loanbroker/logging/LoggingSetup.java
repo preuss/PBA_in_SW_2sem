@@ -3,7 +3,7 @@ package com.loanbroker.logging;
 import java.util.logging.Handler;
 
 /**
- * User: Preuss Date: 09-12-13 Time: 00:34
+ * User: Preuss
  */
 public class LoggingSetup {
 

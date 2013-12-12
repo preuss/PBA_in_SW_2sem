@@ -1,7 +1,7 @@
 package com.loanbroker.logging;
 
 /**
- * User: Preuss Date: 07-12-13 Time: 09:28
+ * @User: Preuss 
  */
 public class LL extends Level {
 

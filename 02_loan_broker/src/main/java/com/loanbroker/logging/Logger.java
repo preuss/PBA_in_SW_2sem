@@ -4,7 +4,7 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 /**
- * User: Preuss Date: 07-12-13 Time: 09:40
+ * User: Preuss
  */
 public class Logger {
 
