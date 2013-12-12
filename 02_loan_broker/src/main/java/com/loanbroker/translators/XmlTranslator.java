@@ -1,6 +1,6 @@
 package com.loanbroker.translators;
 
-import com.loanbroaker.translators.*;
+import com.loanbroker.translators.*;
 import com.loanbroker.handlers.HandlerThread;
 import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;

@@ -1,7 +1,7 @@
 package com.loanbroker;
 
-import com.loanbroaker.translators.JsonTranslator;
-import com.loanbroaker.translators.XmlTranslator;
+import com.loanbroker.translators.JsonTranslator;
+import com.loanbroker.translators.XmlTranslator;
 import com.loanbroker.bank.RabbitBank;
 import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;
