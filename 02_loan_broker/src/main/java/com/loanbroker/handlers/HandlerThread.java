@@ -52,13 +52,15 @@ public abstract class HandlerThread extends Thread {
 	protected final boolean queueExist(String queueName) {
 		boolean queueExists = false;
 		try {
+			// Need to get own channel, to test.
+			// Because the test "declarePassive" closes the channel.
 			Channel channel = getConnection().createChannel();
 			AMQP.Queue.DeclareOk declare = channel.queueDeclarePassive(queueName);
-			log.debug("Declare: " + declare);
+			//log.debug("Declare: " + declare);
 			queueExists = true;
 		} catch (IOException e) {
 			//log.log(Level.SEVERE, null, e);
-			log.critical("queue does not exists? : " + e.getMessage());
+			//log.critical("queue does not exists? : " + e.getMessage());
 			queueExists = false;
 		}
 		return queueExists;

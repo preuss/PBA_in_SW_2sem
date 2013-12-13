@@ -27,7 +27,7 @@ public class Starter {
 //		String rabbitBankOut = "Group2.RabbitBank.Send";
 //		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
 		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn);
-//		rabbitBank.start();
+		rabbitBank.start();
 
 		/*
 		 String mockJsonBankIn = "Group2.JsonBank.Receive";
@@ -38,20 +38,20 @@ public class Starter {
 		String creditIn = "Group2.CreditHandler.Receive";
 		String creditOut = "Group2.CreditHandler.Send";
 		CreditHandler creditHandler = new CreditHandler(creditIn, creditOut);
-//		creditHandler.start();
+		creditHandler.start();
 
 		String bankIn = "Group2.BankHandler.Receive";
 		String bankOut = "Group2.BankHandler.Send";
 		log.debug("Starting bankhandler: " + bankIn + " >--> " + bankOut);
 		BankHandler bankHandler = new BankHandler(bankIn, bankOut);
-//		bankHandler.start();
+		bankHandler.start();
 
 		String aggregatorIn = "Group2.BankHandler.Send";
 		String[] aggregatorOutArray = {
 			"Group2.RecipientHandler.Receive", "Group2.Aggregator.PeepIn"
 		};
 		AggregatorFanout fanout = new AggregatorFanout(aggregatorIn, aggregatorOutArray);
-//		fanout.start();
+		fanout.start();
 
 		String recipientIn = "Group2.RecipientHandler.Receive";
 		Map<String, String> recipientOut = new HashMap<>();
@@ -64,20 +64,20 @@ public class Starter {
 			//log.debug("Starting recipientHandler: " + bankIn + " >--> " + entry.getValue() + "(" + entry.getKey() + ")");
 		}
 		RecipientHandler recipientHandler = new RecipientHandler(recipientIn, recipientOut);
-//		recipientHandler.start();
+		recipientHandler.start();
 
 		XmlTranslator xmlTranslator = new XmlTranslator("Group2.Translator.Xml", "Group2.Normalizer.Xml");
-//		xmlTranslator.start();
+		xmlTranslator.start();
 
 		String jsonTranslatorIn = "Group2.Translator.Json";
 		String jsonTranslatorReplyTo = "Group2.Normalizer.Json";
 		JsonTranslator jsonTranslator = new JsonTranslator(jsonTranslatorIn, jsonTranslatorReplyTo);
-//		jsonTranslator.start();
+		jsonTranslator.start();
 		
 		String rabbitmqTranslatorIn ="Group2.Translator.Rabbitmq";
 		String rabbitmqTranslatorReplyTo = "Group2.Normalizer.Rabbitmq";
 		RabbitmqTranslator rabbitTranslator = new RabbitmqTranslator(rabbitmqTranslatorIn, rabbitmqTranslatorReplyTo);
-//		rabbitTranslator.start();
+		rabbitTranslator.start();
 
 		Map<String, String> normalizerBankIn = new HashMap<>();
 		normalizerBankIn.put("xml", "Group2.Normalizer.Xml");
@@ -86,13 +86,13 @@ public class Starter {
 //		normalizerBankIn.put("webservice", "receipientSend_webservice");
 		String normalizerOut = "Group2.Aggregator.Receive";
 		Normalizer normalizer = new Normalizer(normalizerBankIn, normalizerOut);
-//		normalizer.start();
+		normalizer.start();
 
 		String aggPeepIn = "Group2.Aggregator.PeepIn";
 		String aggIn = "Group2.Aggregator.Receive";
 		String aggOut = "Group2.Aggregator.Send";
 		Aggregator aggregator = new Aggregator(aggPeepIn, aggIn, aggOut);
-//		aggregator.start();
+		aggregator.start();
 
 	}
 
