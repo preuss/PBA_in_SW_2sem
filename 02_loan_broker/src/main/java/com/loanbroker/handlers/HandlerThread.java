@@ -3,6 +3,7 @@ package com.loanbroker.handlers;
 import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;
 import com.loanbroker.models.CanonicalDTO;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -38,25 +39,29 @@ public abstract class HandlerThread extends Thread {
 		Connection connection = connfac.newConnection();
 		return connection;
 	}
-	
+
 	protected final Channel createChannel(String queueName) throws IOException {
 		Connection conn = getConnection();
 		Channel channel = conn.createChannel();
-		if (!queueExist(channel, queueName)) {
+		if (queueExist(queueName) == false) {
 			channel.queueDeclare(queueName, false, false, false, null);
 		}
 		return channel;
 	}
-	
-	protected final boolean queueExist(Channel channel, String queueName) {
-		boolean retVal = true;
+
+	protected final boolean queueExist(String queueName) {
+		boolean queueExists = false;
 		try {
-			channel.queueDeclarePassive(queueName);
-			retVal = false;
+			Channel channel = getConnection().createChannel();
+			AMQP.Queue.DeclareOk declare = channel.queueDeclarePassive(queueName);
+			log.debug("Declare: " + declare);
+			queueExists = true;
 		} catch (IOException e) {
-			log.log(Level.SEVERE, null, e);
+			//log.log(Level.SEVERE, null, e);
+			log.critical("queue does not exists? : " + e.getMessage());
+			queueExists = false;
 		}
-		return retVal;
+		return queueExists;
 	}
 
 	protected final String convertDtoToString(CanonicalDTO canonicalDTO) {

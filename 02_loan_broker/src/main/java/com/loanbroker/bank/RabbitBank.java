@@ -38,13 +38,15 @@ public class RabbitBank extends HandlerThread {
 	public RabbitBank(String receiveQueue) {
 		this.receiveQueue = receiveQueue;
 	}
-	
+
 	private double calculateInterestRate(String ssn, int creditScore, double loanAmount, int loanDuration) {
 		double interestRate = (Math.random() * (12 - 3) + 3);
 		return interestRate;
 	}
+
 	/**
-	 * @param message, format ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60 Output
+	 * @param message, format
+	 * ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60 Output
 	 * @return String
 	 */
 	private Map<String, String> convertMessageToMap(String message) {
@@ -57,7 +59,7 @@ public class RabbitBank extends HandlerThread {
 		return messageMap;
 	}
 
-		/**
+	/**
 	 * Input Message Format:
 	 * ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60 Output
 	 * Message Format: interestRate:5.8#ssn:123456-1234;
@@ -69,7 +71,6 @@ public class RabbitBank extends HandlerThread {
 
 			QueueingConsumer consumer = new QueueingConsumer(channel);
 			channel.basicConsume(receiveQueue, true, consumer);
-
 			while (!isPleaseStop()) {
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 				String messageIn = new String(delivery.getBody());
@@ -78,9 +79,9 @@ public class RabbitBank extends HandlerThread {
 				int creditScore = Integer.parseInt(messageMap.get("creditScore"));
 				double loanAmount = Double.parseDouble(messageMap.get("loanAmount"));
 				int loanDuration = Integer.parseInt(messageMap.get("loanDuration"));
-				
+
 				String replyTo = delivery.getProperties().getReplyTo();
-				
+
 				// calculate interest rate
 				String interestRate = calculateInterestRate(ssn, creditScore, loanAmount, loanDuration) + "";
 
@@ -89,52 +90,56 @@ public class RabbitBank extends HandlerThread {
 				channel.basicPublish("", replyTo, null, messageOut.getBytes());
 				System.out.println(" [x] Sent by 02_rabbitBank: '" + messageOut + "'");
 			}
-		} catch (IOException ex) {
-			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (ShutdownSignalException ex) {
-			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (ConsumerCancelledException ex) {
-			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (IOException e) {
+			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
+			log.critical(e.getMessage());
+		} catch (InterruptedException e) {
+			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
+			log.critical(e.getMessage());
+		} catch (ShutdownSignalException e) {
+			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
+			log.critical("Shutdown: " + e.getMessage());
+		} catch (ConsumerCancelledException e) {
+			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
+			log.critical(e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Input Message Format:
 	 * ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60 Output
 	 * Message Format: interestRate:5.8#ssn:123456-1234;
 	 */
 	/*
-	@Override
-	protected void doRun() {
-		try {
-			Channel channel = createChannel(sendQueue);
-			channel.queueDeclare(receiveQueue, true, true, true, null);
+	 @Override
+	 protected void doRun() {
+	 try {
+	 Channel channel = createChannel(sendQueue);
+	 channel.queueDeclare(receiveQueue, true, true, true, null);
 
-			QueueingConsumer consumer = new QueueingConsumer(channel);
-			channel.basicConsume(receiveQueue, true, consumer);
+	 QueueingConsumer consumer = new QueueingConsumer(channel);
+	 channel.basicConsume(receiveQueue, true, consumer);
 
-			while (!isPleaseStop()) {
-				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-				String messageIn = new String(delivery.getBody());
-				// calculate interest rate
-				String interestRate = (Math.random() * (12 - 3) + 3) + "";
+	 while (!isPleaseStop()) {
+	 QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+	 String messageIn = new String(delivery.getBody());
+	 // calculate interest rate
+	 String interestRate = (Math.random() * (12 - 3) + 3) + "";
 
-				String ssn = messageIn.split("#")[0].split(":")[1];
-				String messageOut = "interestRate:" + interestRate + "#ssn:" + ssn;
-				System.out.println(" [x] Received by 02_rabbitBank: '" + messageIn + "'");
-				channel.basicPublish("", sendQueue, null, messageOut.getBytes());
-				System.out.println(" [x] Sent by 02_rabbitBank: '" + messageOut + "'");
-			}
-		} catch (IOException ex) {
-			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (ShutdownSignalException ex) {
-			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (ConsumerCancelledException ex) {
-			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}*/
+	 String ssn = messageIn.split("#")[0].split(":")[1];
+	 String messageOut = "interestRate:" + interestRate + "#ssn:" + ssn;
+	 System.out.println(" [x] Received by 02_rabbitBank: '" + messageIn + "'");
+	 channel.basicPublish("", sendQueue, null, messageOut.getBytes());
+	 System.out.println(" [x] Sent by 02_rabbitBank: '" + messageOut + "'");
+	 }
+	 } catch (IOException ex) {
+	 Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
+	 } catch (InterruptedException ex) {
+	 Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
+	 } catch (ShutdownSignalException ex) {
+	 Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
+	 } catch (ConsumerCancelledException ex) {
+	 Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, ex);
+	 }
+	 }*/
 }

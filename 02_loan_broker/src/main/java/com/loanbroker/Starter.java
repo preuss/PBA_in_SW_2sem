@@ -27,7 +27,7 @@ public class Starter {
 //		String rabbitBankOut = "Group2.RabbitBank.Send";
 //		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn, rabbitBankOut);
 		RabbitBank rabbitBank = new RabbitBank(rabbitBankIn);
-//		rabbitBank.start();
+		rabbitBank.start();
 
 		/*
 		 String mockJsonBankIn = "Group2.JsonBank.Receive";
