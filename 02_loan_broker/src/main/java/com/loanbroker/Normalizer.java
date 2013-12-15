@@ -1,32 +1,25 @@
 package com.loanbroker;
 
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-import org.xml.sax.*;
-import org.w3c.dom.*;
 import com.loanbroker.handlers.HandlerThread;
-import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;
 import com.loanbroker.models.BankDTO;
 import com.loanbroker.models.CanonicalDTO;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConsumerCancelledException;
-import com.rabbitmq.client.QueueingConsumer;
-import com.rabbitmq.client.ShutdownSignalException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import com.rabbitmq.client.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author Preuss
@@ -58,16 +51,38 @@ public class Normalizer extends HandlerThread {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			try {
 				DocumentBuilder db = dbf.newDocumentBuilder();
-				document = db.parse(message);
+				document = db.parse(new ByteArrayInputStream(message.getBytes()));
 				String interestRateStr = document.getElementsByTagName("interestRate").item(0).getTextContent();
 				interestRate = Double.parseDouble(interestRateStr);
 				ssn = document.getElementsByTagName("ssn").item(0).getTextContent();
+				log.debug("Message from XML Bank parsed.");
 			} catch (ParserConfigurationException e) {
-				log.log(java.util.logging.Level.SEVERE, null, e);
+				log.warning(e.getClass() + ", Message: " + e.getMessage());
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
 			} catch (SAXException e) {
-				log.log(java.util.logging.Level.SEVERE, null, e);
+				log.warning(e.getClass() + ", Message: " + e.getMessage());
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
 			} catch (IOException e) {
-				log.log(java.util.logging.Level.SEVERE, null, e);
+				log.warning(e.getClass() + ", Message: " + e.getMessage());
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
 			}
 		} else if ("json".equalsIgnoreCase(bankName)) {
 			try {
@@ -79,7 +94,16 @@ public class Normalizer extends HandlerThread {
 				ssn = json.getString("ssn");
 				interestRate = json.getDouble("interestRate");
 			} catch (JSONException e) {
-				log.log(java.util.logging.Level.SEVERE, null, e);
+				log.debug("JSON Message (Wrong): " + message);
+				log.warning(e.getClass() + ", Message: " + e.getMessage());
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
+				// Ignore wrong json.
 			}
 		} else if ("rabbit".equalsIgnoreCase(bankName)) {
 			/*
@@ -96,48 +120,88 @@ public class Normalizer extends HandlerThread {
 				}
 			}
 		}
-
+		log.debug("SSN: " + ssn + ", InterestRate: " + interestRate);
 		if (ssn == null || interestRate == Double.NaN) {
 			dto = null;
 		} else {
 			if (ssn.length() == 10) {
-				ssn = ssn.substring(0, 8) + "-" + ssn.substring(8);
+				ssn = ssn.substring(0, 6) + "-" + ssn.substring(6);
 			}
 			if (ssn.length() == 11) {
 				dto = new CanonicalDTO();
 				dto.setSsn(ssn);
 				BankDTO bank = new BankDTO(bankName, interestRate);
+				log.debug("Bank: " + bank);
 				dto.addBank(bank);
 			} else {
 				dto = null;
 			}
 		}
+		log.debug("Message: " + dto);
 		return dto;
 	}
 
-	private CanonicalDTO readBankMessage(String bankName, String queueIn) throws IOException, ConsumerCancelledException, ShutdownSignalException, InterruptedException {
-		CanonicalDTO dto;
-		Channel channel = createChannel(queueIn);
-		QueueingConsumer consumer = new QueueingConsumer(channel);
-		channel.basicConsume(queueIn, true, consumer);
-		int timeoutMilli = 10;
-		QueueingConsumer.Delivery delivery = consumer.nextDelivery(timeoutMilli);
+	private CanonicalDTO readBankMessage(Channel readChannel, String bankName, String queueIn) throws IOException, ConsumerCancelledException, ShutdownSignalException, InterruptedException {
+		CanonicalDTO dto = null;
 
-		if (delivery == null) {
-			dto = null;
-		} else {
-			dto = convertFromBankToDto(bankName, delivery.getBody().toString());
+		try {
+			GetResponse response = readChannel.basicGet(queueIn, true);
+			if (response != null) {
+				if (response.getBody() != null) {
+					dto = convertFromBankToDto(bankName, new String(response.getBody()));
+				}
+			}
+		} catch (IOException e) {
+			log.debug("getConnection: Inside IOException");
+			e.printStackTrace();
+			if (e.getCause() != null && e.getMessage() == null) {
+				log.debug("getConnection: Now Message is null");
+				if (e.getCause() instanceof ShutdownSignalException) {
+					ShutdownSignalException exception = (ShutdownSignalException) e.getCause();
+					throw exception;
+				}
+				if (e.getCause() instanceof ConsumerCancelledException) {
+					ConsumerCancelledException exception = (ConsumerCancelledException) e.getCause();
+					throw exception;
+				}
+				if (e.getCause() instanceof InterruptedException) {
+					InterruptedException exception = (InterruptedException) e.getCause();
+					throw exception;
+				}
+			}
+			throw e;
+		} catch (Exception e) {
+			log.debug("getConnection: Inside Exception");
+			e.printStackTrace();
+			if (e.getCause() != null && e.getMessage() == null) {
+				log.debug("getConnection: Now Message is null");
+				if (e.getCause() instanceof ShutdownSignalException) {
+					ShutdownSignalException exception = (ShutdownSignalException) e.getCause();
+					throw exception;
+				}
+				if (e.getCause() instanceof ConsumerCancelledException) {
+					ConsumerCancelledException exception = (ConsumerCancelledException) e.getCause();
+					throw exception;
+				}
+				if (e.getCause() instanceof InterruptedException) {
+					InterruptedException exception = (InterruptedException) e.getCause();
+					throw exception;
+				}
+			}
+
+		} finally {
 		}
 		return dto;
 	}
 
-	private List<CanonicalDTO> readBankMessages() throws InterruptedException, ShutdownSignalException, ConsumerCancelledException, IOException {
+	private List<CanonicalDTO> readBankMessages(Map<String, Channel> readChannels) throws InterruptedException, ShutdownSignalException, ConsumerCancelledException, IOException {
 		List<CanonicalDTO> messages = new ArrayList<>();
 
 		for (Entry<String, String> keyValue : queuesIn.entrySet()) {
 			String bankName = keyValue.getKey();
 			String queueIn = keyValue.getValue();
-			CanonicalDTO message = readBankMessage(bankName, queueIn);
+			Channel readChannel = readChannels.get(queueIn);
+			CanonicalDTO message = readBankMessage(readChannel, bankName, queueIn);
 			if (message != null) {
 				messages.add(message);
 			}
@@ -145,28 +209,115 @@ public class Normalizer extends HandlerThread {
 		return messages;
 	}
 
-	private void writeBankMessages(List<CanonicalDTO> messages) throws IOException {
-		Channel channel = createChannel(queueOut);
-		for (CanonicalDTO canonicalDTO : messages) {
-			String xmlStr = convertDtoToString(canonicalDTO);
-			channel.basicPublish("", queueOut, null, xmlStr.getBytes());
+	private void writeBankMessages(Channel writeChannel, List<CanonicalDTO> messages) {//throws IOException {
+		try {
+			for (CanonicalDTO canonicalDTO : messages) {
+				String xmlStr = convertDtoToString(canonicalDTO);
+				writeChannel.basicPublish("", queueOut, null, xmlStr.getBytes());
+			}
+		} catch (IOException e) {
+			log.warning(e.getClass() + ", Message: " + e.getMessage());
+			e.printStackTrace();
+			if (e.getCause() != null) {
+				log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+				if (e.getCause().getCause() != null) {
+					log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+				}
+			}
 		}
 	}
 
 	@Override
 	protected void doRun() {
+		Connection conn = null;
+		Channel writeChannel = null;
+		Map<String, Channel> readChannels = new HashMap<>();
 		while (!isPleaseStop()) {
 			try {
-				List<CanonicalDTO> messages = readBankMessages();
-				writeBankMessages(messages);
-			} catch (InterruptedException e) {
-				log.log(Level.SEVERE, null, e);
-			} catch (ShutdownSignalException e) {
-				log.log(Level.SEVERE, null, e);
-			} catch (ConsumerCancelledException e) {
-				log.log(Level.SEVERE, null, e);
+
+				// Create Connections and channels.
+				if (conn == null) {
+					conn = getConnection();
+				}
+				if (writeChannel == null) {
+					writeChannel = createChannel(conn, queueOut);
+				}
+				for (String queueIn : queuesIn.values()) {
+					if (!readChannels.containsKey(queueIn)) {
+						readChannels.put(queueIn, createChannel(conn, queueIn));
+					}
+				}
+
+				try {
+					while (!isPleaseStop()) {
+						List<CanonicalDTO> messages = readBankMessages(readChannels);
+						writeBankMessages(writeChannel, messages);
+					}
+				} catch (InterruptedException e) {
+					log.warning(e.getClass() + ", Message: " + e.getMessage());
+					e.printStackTrace();
+					if (e.getCause() != null) {
+						log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+						if (e.getCause().getCause() != null) {
+							log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+						}
+					}
+				} catch (ShutdownSignalException e) {
+					log.warning(e.getClass() + ", Message: " + e.getMessage());
+					e.printStackTrace();
+					if (e.getCause() != null) {
+						log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+						if (e.getCause().getCause() != null) {
+							log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+						}
+					}
+				} catch (ConsumerCancelledException e) {
+					log.warning(e.getClass() + ", Message: " + e.getMessage());
+					e.printStackTrace();
+					if (e.getCause() != null) {
+						log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+						if (e.getCause().getCause() != null) {
+							log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+						}
+					}
+				} catch (IOException e) {
+					log.warning(e.getClass() + ", Message: " + e.getMessage());
+					e.printStackTrace();
+					if (e.getCause() != null) {
+						log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+						if (e.getCause().getCause() != null) {
+							log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+						}
+					}
+				} finally {
+					/*
+					for (Channel channel : readChannels.values()) {
+						closeChannel(channel);
+						channel = null;
+					}
+					closeConnection(conn);
+					conn = null;*/
+				}
 			} catch (IOException e) {
-				log.log(Level.SEVERE, null, e);
+				log.warning(e.getClass() + ", Message: " + e.getMessage());
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
+
+				closeChannel(writeChannel);
+				writeChannel = null;
+				for (Channel channel : readChannels.values()) {
+					closeChannel(channel);
+					channel = null;
+				}
+				readChannels.clear();
+				closeConnection(conn);
+				conn = null;
+			} finally {
 			}
 		}
 	}

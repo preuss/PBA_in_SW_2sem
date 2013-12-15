@@ -1,13 +1,10 @@
 package com.loanbroker.bank;
 
 import com.loanbroker.handlers.HandlerThread;
-import com.loanbroker.logging.*;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConsumerCancelledException;
-import com.rabbitmq.client.QueueingConsumer;
-import com.rabbitmq.client.ShutdownSignalException;
+import com.loanbroker.logging.Level;
+import com.loanbroker.logging.Logger;
+import com.rabbitmq.client.*;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +20,6 @@ import java.util.Map;
 public class RabbitBank extends HandlerThread {
 
 	private final Logger log = Logger.getLogger(RabbitBank.class);
-
 	private String receiveQueue;
 	//private String sendQueue;
 
@@ -46,7 +42,7 @@ public class RabbitBank extends HandlerThread {
 
 	/**
 	 * @param message, format
-	 * ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60 Output
+	 *                 ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60 Output
 	 * @return String
 	 */
 	private Map<String, String> convertMessageToMap(String message) {
@@ -66,8 +62,11 @@ public class RabbitBank extends HandlerThread {
 	 */
 	@Override
 	protected void doRun() {
+		Connection conn = null;
+		Channel channel = null;
 		try {
-			Channel channel = createChannel(receiveQueue);
+			conn = getConnection();
+			channel = createChannel(conn, receiveQueue);
 
 			QueueingConsumer consumer = new QueueingConsumer(channel);
 			channel.basicConsume(receiveQueue, true, consumer);
@@ -102,6 +101,9 @@ public class RabbitBank extends HandlerThread {
 		} catch (ConsumerCancelledException e) {
 			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
 			log.critical(e.getMessage());
+		} finally {
+			closeChannel(channel);
+			closeConnection(conn);
 		}
 	}
 

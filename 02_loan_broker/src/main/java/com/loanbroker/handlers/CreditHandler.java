@@ -3,24 +3,17 @@ package com.loanbroker.handlers;
 import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;
 import com.loanbroker.models.CanonicalDTO;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import java.io.IOException;
+import com.rabbitmq.client.*;
 import wservices.CreditScoreService;
 import wservices.CreditScoreService_Service;
-import com.rabbitmq.client.AMQP.BasicProperties;
-import com.rabbitmq.client.ConsumerCancelledException;
-import com.rabbitmq.client.QueueingConsumer;
-import com.rabbitmq.client.ShutdownSignalException;
+
+import java.io.IOException;
 
 /**
- *
  * @author Andreas
  */
 public class CreditHandler extends HandlerThread {
 	private final Logger log = Logger.getLogger(CreditHandler.class);
-
 	private final String queueIn;
 	private final String queueOut;
 
@@ -84,23 +77,37 @@ public class CreditHandler extends HandlerThread {
 	}*/
 
 	private CanonicalDTO readMessage() throws IOException, ConsumerCancelledException, ShutdownSignalException, InterruptedException {
-		CanonicalDTO returnMessage;
+		CanonicalDTO returnMessage = null;
 
-		Channel channel = createChannel(queueIn);
-		QueueingConsumer consumer = new QueueingConsumer(channel);
-		channel.basicConsume(queueIn, true, consumer);
+		Connection conn = null;
+		Channel channel = null;
+		try {
+			conn = getConnection();
+			channel = createChannel(conn, queueIn);
+			QueueingConsumer consumer = new QueueingConsumer(channel);
+			channel.basicConsume(queueIn, true, consumer);
 
-		QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-		String xmlStr = delivery.getBody().toString();
-		returnMessage = this.convertStringToDto(xmlStr);
-
+			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+			String xmlStr = delivery.getBody().toString();
+			returnMessage = this.convertStringToDto(xmlStr);
+		} finally {
+			closeChannel(channel);
+			closeConnection(conn);
+		}
 		return returnMessage;
 	}
 
 	private void writeMessage(CanonicalDTO message) throws IOException {
-		Channel channel = createChannel(queueOut);
-		String xmlStr = convertDtoToString(message);
-		channel.basicPublish("", queueOut, null, xmlStr.getBytes());
+		Connection conn = null;
+		Channel channel = null;
+		try {
+			channel = createChannel(conn, queueOut);
+			String xmlStr = convertDtoToString(message);
+			channel.basicPublish("", queueOut, null, xmlStr.getBytes());
+		} finally {
+			closeChannel(channel);
+			closeConnection(conn);
+		}
 	}
 
 	private CanonicalDTO enrichMessageWithCreditScore(CanonicalDTO message) {

@@ -5,27 +5,26 @@
  */
 package com.loanbroker.models;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
- *
  * @author Preuss
  */
 public class CanonicalDTO {
 
-	@Element(required = true)
+	@Element(required = false) // True
 	private String ssn;
-	@Element(required = true)
+	@Element(required = false) // True
 	private double loanAmount;
-	@Element(required = true)
+	@Element(required = false) // True
 	private int loanDuration; // Month.
-
 	@Element(required = false)
 	private Integer creditScore;
-
 	@ElementList(required = false)
 	private ArrayList<BankDTO> banks;
 
@@ -74,11 +73,23 @@ public class CanonicalDTO {
 	public void setBanks(List<BankDTO> banks) {
 		this.banks = new ArrayList<BankDTO>(banks);
 	}
-	
+
 	public boolean addBank(BankDTO bank) {
-		if(this.banks == null) {
-			this.banks = new ArrayList<BankDTO>(banks);
+		if (this.banks == null) {
+			this.banks = new ArrayList<BankDTO>();
 		}
 		return this.banks.add(bank);
+	}
+
+	@Override
+	public String toString() {
+
+		return "CanonicalDTO{" +
+				"ssn='" + ssn + '\'' +
+				", loanAmount=" + loanAmount +
+				", loanDuration=" + loanDuration +
+				", creditScore=" + creditScore +
+				", banks=" + (banks != null ? Arrays.toString(banks.toArray(new BankDTO[0])) : "null") +
+				'}';
 	}
 }

@@ -4,7 +4,6 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
 /**
- *
  * @author Preuss
  */
 @Root
@@ -39,4 +38,11 @@ public class BankDTO {
 		this.interestRate = interestRate;
 	}
 
+	@Override
+	public String toString() {
+		return "BankDTO{" +
+				"name='" + name + '\'' +
+				", interestRate=" + interestRate +
+				'}';
+	}
 }

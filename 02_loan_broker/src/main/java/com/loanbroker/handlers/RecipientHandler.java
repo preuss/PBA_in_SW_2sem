@@ -61,10 +61,10 @@ public class RecipientHandler extends HandlerThread {
 			chan.queueDeclare(queueIn, false, false, false, null);
 			System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 			QueueingConsumer consumer = new QueueingConsumer(chan);
-			chan.basicConsume(queueIn, true, consumer);
+			String consumerTag = chan.basicConsume(queueIn, true, consumer);
 			//start polling messages
 			while (isPleaseStop() == false) {
-				String consumerTag = consumer.getConsumerTag();
+				//String consumerTag = consumer.getConsumerTag();
 				System.out.println(" [-] ConsumerTag: '" + consumerTag + "'");
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 				String xmlStr = delivery.getBody().toString();
@@ -72,14 +72,18 @@ public class RecipientHandler extends HandlerThread {
 				//CanonicalDTO dto = new String(delivery.getBody());
 				//System.out.println(" [x] Received '" + message + "'");
 			}
-		} catch (IOException ex) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (ShutdownSignalException ex) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (ConsumerCancelledException ex) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (IOException e) {
+			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, e);
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, e);
+			e.printStackTrace();
+		} catch (ShutdownSignalException e) {
+			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, e);
+			e.printStackTrace();
+		} catch (ConsumerCancelledException e) {
+			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, e);
+			e.printStackTrace();
 		}
 	}
 
