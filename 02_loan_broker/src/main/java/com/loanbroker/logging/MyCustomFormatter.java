@@ -28,6 +28,10 @@ public class MyCustomFormatter extends Formatter {
 		sb.append(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(date));
 		sb.append(" ");
 
+		// Gets the class and add it to the buffer.
+		sb.append("[").append(record.getLoggerName()).append("]");
+		sb.append(" ");
+
 		// Get the level name and add it to the buffer
 		sb.append(record.getLevel().getName());
 		sb.append(" ");
