@@ -1,5 +1,6 @@
 package com.loanbroker.translators;
 
+import com.loanbroker.bank.RabbitBank;
 import com.loanbroker.handlers.HandlerThread;
 import com.loanbroker.logging.Level;
 import com.loanbroker.logging.Logger;
@@ -7,7 +8,9 @@ import com.loanbroker.models.CanonicalDTO;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.ShutdownSignalException;
 
 import java.io.IOException;
 
@@ -27,11 +30,8 @@ public class RabbitmqTranslator extends HandlerThread {
 		this.replyToQueue = replyToQueue;
 	}
 
-	public void receiveBankName() throws IOException, InterruptedException, Exception {
-		Connection conn = null;
-		Channel channel = null;
+	public void receiveBankName(Connection connection, Channel channel) throws IOException, InterruptedException {
 		try {
-			channel = createChannel(conn, queueNameReceive);
 
 			System.out.println("RabbitmqTranslator Waiting for messages");
 			QueueingConsumer consumer = new QueueingConsumer(channel);
@@ -43,58 +43,65 @@ public class RabbitmqTranslator extends HandlerThread {
 				System.out.println("Received at RabbitmqTranslator" + message);
 				CanonicalDTO dto = convertStringToDto(message);
 				System.out.println("the score is " + dto.getCreditScore());
-				sendRequestToXmlBank(translateMessage(dto));
+				sendRequestToXmlBank(channel, translateMessage(dto));
 			}
-		/*} catch (IOException e) {
-			log.severe(e.getClass() + ": " + e.getMessage());
-			if (e.getCause() != null) {
-				log.severe("\t" + e.getCause().getClass() + ": " + e.getCause().getMessage());
-			}*/
+			/*} catch (IOException e) {
+			 log.severe(e.getClass() + ": " + e.getMessage());
+			 if (e.getCause() != null) {
+			 log.severe("\t" + e.getCause().getClass() + ": " + e.getCause().getMessage());
+			 }*/
 		} finally {
 			closeChannel(channel);
-			closeConnection(conn);
+			closeConnection(connection);
 		}
 	}
 
 	private String translateMessage(CanonicalDTO dto) {
 		String rabbitmqValue = "ssn:" + dto.getSsn()
-				+ "#creditScore:" + dto.getCreditScore()
-				+ "#loanAmount:" + dto.getLoanAmount()
-				+ "#loanDuration:" + dto.getLoanDuration();
+			+ "#creditScore:" + dto.getCreditScore()
+			+ "#loanAmount:" + dto.getLoanAmount()
+			+ "#loanDuration:" + dto.getLoanDuration();
 
 		return rabbitmqValue;
 	}
 
-	private void sendRequestToXmlBank(String xmlString) throws IOException {
-		Connection conn = null;
-		Channel channel = null;
-		try {
-			channel = createChannel(conn, replyToQueue);
+	private void sendRequestToXmlBank(Channel channel, String xmlString) throws IOException {
+		channel.queueDeclare(replyToQueue, false, false, false, null);
 
-			AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties().builder();
-			builder.replyTo(replyToQueue);
-			AMQP.BasicProperties props = builder.build();
-			channel.basicPublish("", RABBITMQ_BANK_IN, props, xmlString.getBytes());
+		AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties().builder();
+		builder.replyTo(replyToQueue);
+		AMQP.BasicProperties props = builder.build();
+		channel.basicPublish("", RABBITMQ_BANK_IN, props, xmlString.getBytes());
 //		channel.basicPublish(EXCHANGE_NAME, "", props, xmlString.getBytes());
-			System.out.println("Message Sent from translator: " + xmlString);
-//      channel.close();
-//      connection.close();
-		} finally {
-			closeChannel(channel);
-			closeConnection(conn);
-		}
+		System.out.println("Message Sent from translator: " + xmlString);
 	}
 
 	@Override
 	protected void doRun() {
-		while (isPleaseStop() == false) {
-			try {
-				receiveBankName();
-			} catch (InterruptedException e) {
-				log.log(Level.SEVERE, null, e);
-			} catch (Exception e) {
-				log.log(Level.SEVERE, null, e);
+		Connection connection = null;
+		Channel channel = null;
+		try {
+			connection = getConnection();
+			channel = createChannel(connection, queueNameReceive);
+
+			while (isPleaseStop() == false) {
+				receiveBankName(connection, channel);
 			}
+		} catch (IOException e) {
+			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
+			log.critical(e.getMessage());
+		} catch (InterruptedException e) {
+			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
+			log.critical(e.getMessage());
+		} catch (ShutdownSignalException e) {
+			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
+			log.critical("Shutdown: " + e.getMessage());
+		} catch (ConsumerCancelledException e) {
+			Logger.getLogger(RabbitBank.class.getName()).log(Level.SEVERE, null, e);
+			log.critical(e.getMessage());
+		} finally {
+			closeChannel(channel);
+			closeConnection(connection);
 		}
 	}
 
