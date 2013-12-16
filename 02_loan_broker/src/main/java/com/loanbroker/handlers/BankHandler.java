@@ -30,9 +30,6 @@ public class BankHandler extends HandlerThread {
 
     private final Logger log = Logger.getLogger(BankHandler.class);
 
-//    private final static String BANKLIST_QUEUE = "02_rating_channel";
-//    private final static String RATING_QUEUE = "02_rating_channel";
-
     private String receiveQueue;
     private String sendQueue;
 
