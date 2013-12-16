@@ -36,7 +36,7 @@ public class Starter {
 		 //		jsonMockBank.start();
 		 */
 		String creditIn = "Group2.CreditHandler.Receive";
-		String creditOut = "Group2.CreditHandler.Send";
+		String creditOut = "Group2.BankHandler.Receive";
 		CreditHandler creditHandler = new CreditHandler(creditIn, creditOut);
 //		creditHandler.start();
 
@@ -44,7 +44,7 @@ public class Starter {
 		String bankOut = "Group2.BankHandler.Send";
 		log.debug("Starting bankhandler: " + bankIn + " >--> " + bankOut);
 		BankHandler bankHandler = new BankHandler(bankIn, bankOut);
-//		bankHandler.start();
+		bankHandler.start();
 
 		String aggregatorIn = "Group2.BankHandler.Send";
 		String[] aggregatorOutArray = {
@@ -92,7 +92,7 @@ public class Starter {
 		String aggIn = "Group2.Aggregator.Receive";
 		String aggOut = "Group2.Aggregator.Send";
 		Aggregator aggregator = new Aggregator(aggPeepIn, aggIn, aggOut);
-		aggregator.start();
+//		aggregator.start();
 
 	}
 
