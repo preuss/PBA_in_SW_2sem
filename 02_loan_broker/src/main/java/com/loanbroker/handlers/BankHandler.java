@@ -43,70 +43,62 @@ public class BankHandler extends HandlerThread {
 		this.sendQueue = sendQueue;
 	}
 
-	private void generateBankList(Integer rating) {
-		ArrayList<String> banks = new ArrayList<String>();
-		if (rating > 0) {
-			banks.add("Bank of Tolerance");
+	private CanonicalDTO generateBankList(CanonicalDTO dto) {
+		ArrayList<BankDTO> banks = new ArrayList<BankDTO>();
+		BankDTO bank;
+		if (dto.getCreditScore() > 0) {
+			bank = new BankDTO();
+			bank.setName("Bank of Tolerance");
+			banks.add(bank);
 		}
-		if (rating > 200) {
-			banks.add("Bank of the Average");
+		if (dto.getCreditScore() > 200) {
+			bank = new BankDTO();
+			bank.setName("Bank of the Average");
+			banks.add(bank);
 		}
-		if (rating > 400) {
-			banks.add("Bank of the Rich");
+		if (dto.getCreditScore() > 400) {
+			bank = new BankDTO();
+			bank.setName("Bank of the Rich");
+			banks.add(bank);
 		}
-		if (rating > 600) {
-			banks.add("Bank of the Elite");
+		if (dto.getCreditScore() > 600) {
+			bank = new BankDTO();
+			bank.setName("Bank of the Elite");
+			banks.add(bank);
 		}
+		dto.setBanks(banks);
+		for (int i = 0; i < dto.getBanks().size(); i++) {
+		}
+		return dto;
+	}
 
-    private CanonicalDTO generateBankList(CanonicalDTO dto) {
-        ArrayList<BankDTO> banks = new ArrayList<BankDTO>();
-        BankDTO bank;
-        if (dto.getCreditScore() > 0) {
-            bank = new BankDTO();
-            bank.setName("Bank of Tolerance");
-            banks.add(bank);
-        }
-        if (dto.getCreditScore() > 200) {
-            bank = new BankDTO();
-            bank.setName("Bank of the Average");
-            banks.add(bank);
-        }
-        if (dto.getCreditScore() > 400) {
-            bank = new BankDTO();
-            bank.setName("Bank of the Rich");
-            banks.add(bank);
-        }
-        if (dto.getCreditScore() > 600) {
-            bank = new BankDTO();
-            bank.setName("Bank of the Elite");
-            banks.add(bank);
-        }
-        dto.setBanks(banks);
-        for (int i = 0; i < dto.getBanks().size(); i++) {
-        }
-        return dto;
-    }
+	public void receiveCreditScore() throws IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException, Exception {
+		Channel chan = getConnection().createChannel();
+		//Declare a queue
+		chan.queueDeclare(receiveQueue, false, false, false, null);
+		System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+		QueueingConsumer consumer = new QueueingConsumer(chan);
+		chan.basicConsume(receiveQueue, true, consumer);
+		//start polling messages
+		while (true) {
+			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+			String message = new String(delivery.getBody());
+			System.out.println(" [x] Received '" + message);
+			CanonicalDTO dto = convertStringToDto(message);
+			System.out.println("the score is " + dto.getCreditScore());
+			sendBanks(generateBankList(dto));
+			//Thread.sleep(10000);
+		}
+	}
 
-    public void receiveCreditScore() throws IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException, Exception {
-        Channel chan = getConnection().createChannel();
-        //Declare a queue
-        chan.queueDeclare(receiveQueue, false, false, false, null);
-        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-        QueueingConsumer consumer = new QueueingConsumer(chan);
-        chan.basicConsume(receiveQueue, true, consumer);
-        //start polling messages
-       while (true) {
-            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-            String message = new String(delivery.getBody());
-            System.out.println(" [x] Received '" + message);
-            CanonicalDTO dto = convertStringToDto(message);
-            System.out.println("the score is " + dto.getCreditScore());
-            sendBanks(generateBankList(dto));
-            //Thread.sleep(10000);
-        }
-    }
-    
-    
+	private void sendBanks(CanonicalDTO dto) throws IOException {
+		Channel channel = getConnection().createChannel();
+		channel.queueDeclare(sendQueue, false, false, false, null);
+		String message = convertDtoToString(dto);
+		AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().replyTo(channel.queueDeclare().getQueue()).build();
+		channel.basicPublish("", sendQueue, props, message.getBytes());
+		System.out.println(" [x] Sent '" + message + "'");
+	}
 
 	@Override
 	protected void doRun() {
