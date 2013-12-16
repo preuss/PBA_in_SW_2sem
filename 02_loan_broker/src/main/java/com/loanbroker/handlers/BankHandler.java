@@ -30,9 +30,8 @@ public class BankHandler extends HandlerThread {
 
 	private final Logger log = Logger.getLogger(BankHandler.class);
 
-    private String receiveQueue;
-    private String sendQueue;
-
+	private String receiveQueue;
+	private String sendQueue;
 
 	public BankHandler(String receiveQueue, String sendQueue) {
 		this.receiveQueue = receiveQueue;
