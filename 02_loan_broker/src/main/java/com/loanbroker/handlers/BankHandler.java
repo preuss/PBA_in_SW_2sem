@@ -5,6 +5,7 @@ package com.loanbroker.handlers;
  * @author Andreas
  */
 import com.loanbroker.logging.Logger;
+import com.loanbroker.models.BankDTO;
 import com.loanbroker.models.CanonicalDTO;
 import com.rabbitmq.client.AMQP;
 import java.io.IOException;
@@ -57,37 +58,55 @@ public class BankHandler extends HandlerThread {
 			banks.add("Bank of the Elite");
 		}
 
-		for (String s : banks) {
-			System.out.println(s);
-		}
-	}
+    private CanonicalDTO generateBankList(CanonicalDTO dto) {
+        ArrayList<BankDTO> banks = new ArrayList<BankDTO>();
+        BankDTO bank;
+        if (dto.getCreditScore() > 0) {
+            bank = new BankDTO();
+            bank.setName("Bank of Tolerance");
+            banks.add(bank);
+        }
+        if (dto.getCreditScore() > 200) {
+            bank = new BankDTO();
+            bank.setName("Bank of the Average");
+            banks.add(bank);
+        }
+        if (dto.getCreditScore() > 400) {
+            bank = new BankDTO();
+            bank.setName("Bank of the Rich");
+            banks.add(bank);
+        }
+        if (dto.getCreditScore() > 600) {
+            bank = new BankDTO();
+            bank.setName("Bank of the Elite");
+            banks.add(bank);
+        }
+        dto.setBanks(banks);
+        for (int i = 0; i < dto.getBanks().size(); i++) {
+        }
+        return dto;
+    }
 
-	public void receiveCreditScore() throws IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException, Exception {
-		Channel chan = getConnection().createChannel();
-		//Declare a queue
-		chan.queueDeclare(receiveQueue, false, false, false, null);
-		System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-		QueueingConsumer consumer = new QueueingConsumer(chan);
-		chan.basicConsume(receiveQueue, true, consumer);
-		//start polling messages
-		while (true) {
-			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-			String message = new String(delivery.getBody());
-			System.out.println("BankHandler Received " + message);
-			generateBankList(Integer.parseInt(message));
-			CanonicalDTO dto = convertStringToDto(message);
-			sendBanks(dto);
-		}
-	}
-
-	private void sendBanks(CanonicalDTO dto) throws IOException {
-		Channel channel = getConnection().createChannel();
-		channel.queueDeclare(sendQueue, false, false, false, null);
-		String message = convertDtoToString(dto);
-		AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().replyTo(channel.queueDeclare().getQueue()).build();
-		channel.basicPublish("", sendQueue, props, message.getBytes());
-		System.out.println(" [x] Sent '" + message + "'");
-	}
+    public void receiveCreditScore() throws IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException, Exception {
+        Channel chan = getConnection().createChannel();
+        //Declare a queue
+        chan.queueDeclare(receiveQueue, false, false, false, null);
+        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+        QueueingConsumer consumer = new QueueingConsumer(chan);
+        chan.basicConsume(receiveQueue, true, consumer);
+        //start polling messages
+       while (true) {
+            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+            String message = new String(delivery.getBody());
+            System.out.println(" [x] Received '" + message);
+            CanonicalDTO dto = convertStringToDto(message);
+            System.out.println("the score is " + dto.getCreditScore());
+            sendBanks(generateBankList(dto));
+            //Thread.sleep(10000);
+        }
+    }
+    
+    
 
 	@Override
 	protected void doRun() {
