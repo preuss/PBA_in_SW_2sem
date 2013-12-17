@@ -46,11 +46,12 @@ public class Starter {
 		BankHandler bankHandler = new BankHandler(bankIn, bankOut);
 		bankHandler.start();
 
-		String aggregatorIn = "Group2.BankHandler.Send";
-		String[] aggregatorOutArray = {
-			"Group2.RecipientHandler.Receive", "Group2.Aggregator.PeepIn"
+		String aggregatorFanoutIn = "Group2.BankHandler.Send";
+		String[] aggregatorFanoutOutArray = {
+			"Group2.RecipientHandler.Receive", 
+			"Group2.Aggregator.PeepIn"
 		};
-		AggregatorFanout fanout = new AggregatorFanout(aggregatorIn, aggregatorOutArray);
+		AggregatorFanout fanout = new AggregatorFanout(aggregatorFanoutIn, aggregatorFanoutOutArray);
 		fanout.start();
 
 		String recipientIn = "Group2.RecipientHandler.Receive";

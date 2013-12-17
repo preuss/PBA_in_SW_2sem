@@ -20,7 +20,7 @@ import org.simpleframework.xml.core.Persister;
 public class JsonTranslator extends HandlerThread {
 	private final Logger log = Logger.getLogger(JsonTranslator.class);
 
-	private final String EXCHANGE_NAME = "cphbusiness.bankXML";
+	private final String EXCHANGE_NAME = "cphbusiness.bankJSON";
 	private String queueNameReceive;    //"02_bankXML"
 	private String replyToQueue;        //"02_xml_reply_queue"
 
@@ -43,12 +43,12 @@ public class JsonTranslator extends HandlerThread {
 			System.out.println("Received at XmlTranslator" + message);
 			CanonicalDTO dto = convertStringToDto(message);
 			System.out.println("the score is " + dto.getCreditScore());
-			sendRequestToXmlBank(translateMessage(dto));
+			sendRequestToJsonBank(translateMessage(dto));
 		}
 	}
 
 	private String translateMessage(CanonicalDTO dto) {
-
+		
 		String jsonValue = "{\"ssn\":" + dto.getSsn().replace("-", "").trim()
 				+ ",\"creditScore\":" + dto.getCreditScore()
 				+ ",\"loanAmount\":" + dto.getLoanAmount()
@@ -57,14 +57,14 @@ public class JsonTranslator extends HandlerThread {
 		return jsonValue;
 	}
 
-	private void sendRequestToXmlBank(String xmlString) throws IOException {
+	private void sendRequestToJsonBank(String jsonString) throws IOException {
 		Channel channel = getConnection().createChannel();
 		channel.queueDeclare(replyToQueue, false, false, false, null);
 		AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties().builder();
 		builder.replyTo(replyToQueue);
 		AMQP.BasicProperties props = builder.build();
-		channel.basicPublish(EXCHANGE_NAME, "", props, xmlString.getBytes());
-		System.out.println("Message Sent from translator: " + xmlString);
+		channel.basicPublish(EXCHANGE_NAME, "", props, jsonString.getBytes());
+		System.out.println("Message Sent from translator: " + jsonString);
 //      channel.close();
 //      connection.close();
 

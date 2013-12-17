@@ -105,11 +105,12 @@ public class Normalizer extends HandlerThread {
 				}
 				// Ignore wrong json.
 			}
-		} else if ("rabbit".equalsIgnoreCase(bankName)) {
+		} else if ("rabbitmq".equalsIgnoreCase(bankName)) {
 			/*
 			 example output:
 			 "interestRate:5.5#ssn:160578-9787"
 			 */
+			log.debug("From Bank RabbitMQ Message: " + message);
 			for (String keyValue : message.split("#")) {
 				String key = keyValue.split(":")[0];
 				String value = keyValue.split(":")[1];

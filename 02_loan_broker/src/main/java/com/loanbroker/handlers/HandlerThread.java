@@ -52,6 +52,7 @@ public abstract class HandlerThread extends Thread {
 					throw exception;
 				}
 			}
+			connection = null;
 			throw e;
 		}
 	}
@@ -74,7 +75,7 @@ public abstract class HandlerThread extends Thread {
 	protected final Channel createChannel(Connection conn, String queueName) throws IOException {
 		try {
 			if (channel == null) {
-				channel = conn.createChannel();
+				channel = getConnection().createChannel();
 			}
 		} catch (IOException e) {
 			log.debug("getConnection: Inside IOException");

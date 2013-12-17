@@ -1,5 +1,7 @@
 package com.loanbroker.handlers;
 
+import com.loanbroker.logging.Level;
+import com.loanbroker.logging.Logger;
 import com.loanbroker.models.CanonicalDTO;
 import com.loanbroker.models.BankDTO;
 import com.rabbitmq.client.Channel;
@@ -16,8 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -27,11 +27,13 @@ import org.simpleframework.xml.core.Persister;
  */
 public class RecipientHandler extends HandlerThread {
 
+	private final Logger log = Logger.getLogger(RecipientHandler.class);
+
 	private String queueIn;
-/*	private String QUEUE_NAME_BANK_1;
-	private String QUEUE_NAME_BANK_2;
-	private String QUEUE_NAME_BANK_3;
-	private String QUEUE_NAME_BANK_4;*/
+	/*	private String QUEUE_NAME_BANK_1;
+	 private String QUEUE_NAME_BANK_2;
+	 private String QUEUE_NAME_BANK_3;
+	 private String QUEUE_NAME_BANK_4;*/
 	/*	private final String QUEUE_NAME ="02_recipient_list_channel";
 	 private final String QUEUE_NAME_BANK_1 = "02_bank_xml_channel";
 	 private final String QUEUE_NAME_BANK_2 = "02_bank_json_channel";
@@ -55,60 +57,92 @@ public class RecipientHandler extends HandlerThread {
 
 	@Override
 	public void doRun() {
-		try {
-			Connection conn = getConnection();
-			Channel chan = conn.createChannel();
-			chan.queueDeclare(queueIn, false, false, false, null);
-			System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-			QueueingConsumer consumer = new QueueingConsumer(chan);
-			String consumerTag = chan.basicConsume(queueIn, true, consumer);
-			//start polling messages
-			while (isPleaseStop() == false) {
-				//String consumerTag = consumer.getConsumerTag();
-				System.out.println(" [-] ConsumerTag: '" + consumerTag + "'");
+		Connection connection = null;
+		Channel channel = null;
+		QueueingConsumer consumer = null;
+		String consumerTag = null;
+		//start polling messages
+		while (isPleaseStop() == false) {
+			try {
+				if (connection == null) {
+					connection = getConnection();
+					channel = createChannel(connection, queueIn);
+					consumer = new QueueingConsumer(channel);
+					consumerTag = channel.basicConsume(queueIn, true, consumer);
+					for (String queueOut : queueOutBanks.values()) {
+						//channel.queueDeclare(queueIn, false, false, false, null);
+						channel.queueDeclare(queueOut, false, false, false, null);
+					}
+					System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+					System.out.println(" [-] ConsumerTag: '" + consumerTag + "'");
+				}
+
+				log.debug("Try to read a message to RecipientHandler");
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-				String xmlStr = delivery.getBody().toString();
-				processBankOutput(xmlStr);
+				byte [] messageRaw = delivery.getBody();
+				String xmlStr = new String(messageRaw);
+				log.debug("Message: " + xmlStr.replace("\r", "").replace("\n", "").replace(" ", "").replace("\t", ""));
+				processBankOutput(channel, xmlStr);
 				//CanonicalDTO dto = new String(delivery.getBody());
 				//System.out.println(" [x] Received '" + message + "'");
+			} catch (IOException e) {
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
+			} catch (ShutdownSignalException e) {
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
+			} catch (ConsumerCancelledException e) {
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				if (e.getCause() != null) {
+					log.warning("\t" + e.getCause().getClass() + ", " + e.getCause().getMessage());
+					if (e.getCause().getCause() != null) {
+						log.warning("\t\t" + e.getCause().getCause().getClass() + ", " + e.getCause().getCause().getMessage());
+					}
+				}
 			}
-		} catch (IOException e) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, e);
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, e);
-			e.printStackTrace();
-		} catch (ShutdownSignalException e) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, e);
-			e.printStackTrace();
-		} catch (ConsumerCancelledException e) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, e);
-			e.printStackTrace();
 		}
 	}
 
-	private void processBankOutput(String xmlStr) {
+	private void processBankOutput(Channel channel, String xmlStr) throws IOException {
 		Serializer serializer = new Persister();
-		try {
-			CanonicalDTO dto = serializer.read(CanonicalDTO.class, xmlStr);
+		CanonicalDTO dto = convertStringToDto(xmlStr);
+		if(dto == null) {
+			log.debug("Problem with decoding message to DTO, throwing away :-<");
+			return;
+		}
 
-//          OutputStream outputStream = new ByteArrayOutputStream();
-//          serializer.write(dto, outputStream);
-			Connection conn = getConnection();
-			for (BankDTO bank : dto.getBanks()) {
-				Channel channel = conn.createChannel();
-
-				String queueName = getBankChannelName(bank.getName());
-				if (queueName != null) {
-					channel.queueDeclare(queueName, false, false, false, null);
-					channel.basicPublish("", queueName, null, xmlStr.getBytes());
-					System.out.println(" [x] Sent '" + xmlStr + "'");
-				} else {
-					// TODO: publish to error queue.
-				}
+		boolean noBanks = true;
+		for (BankDTO bank : dto.getBanks()) {
+			String queueName = getBankChannelName(bank.getName());
+			if (queueName != null) {
+				channel.basicPublish("", queueName, null, xmlStr.getBytes());
+				System.out.println(" [x] Sent '" + xmlStr + "'");
+				noBanks = false;
+				log.info("Delivered to bank: " + bank.getName());
+			} else {
+				// TODO: publish to error queue.
 			}
-		} catch (Exception ex) {
-			Logger.getLogger(RecipientHandler.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		if (noBanks) {
+			log.info("RecipientHandler: No Banks for this DTO: " + dto);
 		}
 	}
 
