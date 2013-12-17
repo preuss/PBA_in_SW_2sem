@@ -22,13 +22,13 @@ import java.util.Map;
  */
 public class Aggregator extends HandlerThread {
 
-	private long timeOutInMilliseconds = 2 * 60 * 1000; // 2 minutes
+	private long timeOutInMilliseconds = 1 * 5 * 1000; // 2 minutes
 	private Logger log = Logger.getLogger(Aggregator.class);
 	private String peepQueueIn;
 	private String queueIn;
 	private String queueOut;
-	private HashMap<String, CanonicalDTO> canons = new HashMap();
-	private HashMap<String, List<BankDTO>> incomingBanks = new HashMap();
+	private HashMap<String, CanonicalDTO> peekDtoMap = new HashMap();
+	private HashMap<String, CanonicalDTO> incomingBanks = new HashMap();
 	private HashMap<String, Date> timeouts = new HashMap();
 
 	public Aggregator(String peepQueueIn, String queueIn, String queueOut) {
@@ -61,11 +61,11 @@ public class Aggregator extends HandlerThread {
 
 	private void sendAllSendableMessages(Connection connection, Channel channel) throws IOException {
 		List<String> sendable = new ArrayList();
-		for (CanonicalDTO canon : canons.values()) {
-			String ssn = canon.getSsn();
-			int numBanks = canon.getBanks().size();
+		for (CanonicalDTO peekDto : peekDtoMap.values()) {
+			String ssn = peekDto.getSsn();
+			int numBanks = peekDto.getBanks().size();
 			if (incomingBanks.containsKey(ssn)) {
-				List<BankDTO> banks = incomingBanks.get(ssn);
+				List<BankDTO> banks = incomingBanks.get(ssn).getBanks();
 				if (banks.size() == numBanks) {
 					sendable.add(ssn);
 				}
@@ -77,34 +77,57 @@ public class Aggregator extends HandlerThread {
 	}
 
 	private void sendMessage(Connection connection, Channel outChannel, String ssn) throws IOException {
-		CanonicalDTO canon = canons.get(ssn);
+		CanonicalDTO peekDto = peekDtoMap.get(ssn);
 
 		// Cleanup
-		canons.remove(ssn);
+		if (peekDtoMap.containsKey(ssn)) {
+			peekDtoMap.remove(ssn);
+		}
 		if (timeouts.containsKey(ssn)) {
 			timeouts.remove(ssn);
 		}
-		canon.setBanks(incomingBanks.get(ssn));
-		incomingBanks.remove(ssn);
+		if (peekDto != null) {
+			if (incomingBanks.containsKey(ssn)) {
+				peekDto.setBanks(incomingBanks.get(ssn).getBanks());
+				incomingBanks.remove(ssn);
+			} else {
+				log.debug("Timeout before any incoming banks");
+				peekDto = null;
+			}
+		} else {
+			if (incomingBanks.containsKey(ssn)) {
+				peekDto = incomingBanks.get(ssn);
+			} else {
+				log.warning("We don't have any banks with ssn: " + ssn);
+			}
+		}
+		if (peekDto == null) {
+			log.error("Peek DTO is null.");
+			return;
+		}
 
 		// Now sending.
 		outChannel = createChannel(connection, queueOut);
-		String xmlStr = convertDtoToString(canon);
+		String xmlStr = convertDtoToString(peekDto);
 		outChannel.basicPublish("", queueOut, null, xmlStr.getBytes());
 	}
 
-	private void addBankToMaps(CanonicalDTO newDto) {
-		String ssn = newDto.getSsn();
+	private void addIncomingBank(CanonicalDTO newIncomingDto) {
+		String ssn = newIncomingDto.getSsn();
 		if (incomingBanks.containsKey(ssn)) {
-			List<BankDTO> banks = incomingBanks.get(ssn);
-			if (newDto.getBanks() != null) {
-				for (BankDTO newBank : newDto.getBanks()) {
-					banks.add(newBank);
+			CanonicalDTO currentDto = incomingBanks.get(ssn);
+			List<BankDTO> currentBanks = currentDto.getBanks();
+			if (newIncomingDto.getBanks() != null) {
+				for (BankDTO newBank : newIncomingDto.getBanks()) {
+					if(!currentBanks.contains(newBank)){
+						currentBanks.add(newBank);
+					}
 				}
 			}
+			currentDto.setBanks(currentBanks);
 		} else {
-			if (newDto.getBanks() != null) {
-				incomingBanks.put(ssn, newDto.getBanks());
+			if (newIncomingDto.getBanks() != null) {
+				incomingBanks.put(ssn, newIncomingDto);
 			}
 		}
 	}
@@ -115,12 +138,13 @@ public class Aggregator extends HandlerThread {
 			String ssn = entry.getKey();
 			Date timeoutDate = entry.getValue();
 			if (new Date().getTime() > timeoutDate.getTime()) {
+				log.debug("Timeout for SSN: " + ssn);
 				sendNowAndRemoveSsn.add(ssn);
 			}
 		}
 		for (String ssn : sendNowAndRemoveSsn) {
 			timeouts.remove(ssn);
-			this.canons.remove(ssn);
+			this.peekDtoMap.remove(ssn);
 			sendMessage(connection, channel, ssn);
 		}
 	}
@@ -143,7 +167,7 @@ public class Aggregator extends HandlerThread {
 				log.trace("allDto");
 				CanonicalDTO allDto = receiveMessage(connection, channel, peepQueueIn);
 				if (allDto != null) {
-					addCanon(allDto);
+					addPeek(allDto);
 					addTimeout(allDto);
 				}
 
@@ -151,7 +175,9 @@ public class Aggregator extends HandlerThread {
 				CanonicalDTO receiveDto = receiveMessage(connection, channel, queueIn);
 				if (receiveDto != null) {
 					log.debug("Received DTO: " + receiveDto);
-					addBankToMaps(receiveDto);
+					addIncomingBank(receiveDto);
+					addPeek(receiveDto);
+					addTimeout(receiveDto);
 				}
 
 				sendAllSendableMessages(connection, channel);
@@ -171,13 +197,15 @@ public class Aggregator extends HandlerThread {
 		}
 	}
 
-	private void addCanon(CanonicalDTO allDto) {
-		canons.put(allDto.getSsn(), allDto);
+	private void addPeek(CanonicalDTO allDto) {
+		peekDtoMap.put(allDto.getSsn(), allDto);
 	}
 
 	private void addTimeout(CanonicalDTO allDto) {
 		Date timeoutDate = new Date();
 		timeoutDate = new Date(timeoutDate.getTime() + timeOutInMilliseconds);
-		timeouts.put(allDto.getSsn(), timeoutDate);
+		if (!timeouts.containsKey(allDto.getSsn())) {
+			timeouts.put(allDto.getSsn(), timeoutDate);
+		}
 	}
 }

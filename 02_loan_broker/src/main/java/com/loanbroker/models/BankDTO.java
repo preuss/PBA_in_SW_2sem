@@ -1,5 +1,6 @@
 package com.loanbroker.models;
 
+import java.util.Objects;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
@@ -37,6 +38,29 @@ public class BankDTO {
 	public void setInterestRate(double interestRate) {
 		this.interestRate = interestRate;
 	}
+
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash = 73 * hash + Objects.hashCode(this.name);
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final BankDTO other = (BankDTO) obj;
+		if (!Objects.equals(this.name, other.name)) {
+			return false;
+		}
+		return true;
+	}
+	
 
 	@Override
 	public String toString() {
