@@ -93,7 +93,7 @@ public class Starter {
 		String aggIn = "Group2.Aggregator.Receive";
 		String aggOut = "Group2.Aggregator.Send";
 		Aggregator aggregator = new Aggregator(aggPeepIn, aggIn, aggOut);
-//		aggregator.start();
+		aggregator.start();
 
 	}
 

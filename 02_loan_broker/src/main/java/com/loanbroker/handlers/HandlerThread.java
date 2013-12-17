@@ -168,6 +168,7 @@ public abstract class HandlerThread extends Thread {
 		try {
 			dto = serializer.read(CanonicalDTO.class, xmlString);
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.severe(e.getClass() + ": " + e.getMessage());
 			if (e.getCause() != null) {
 				log.severe("\t" + e.getCause().getClass() + ": " + e.getCause().getMessage());

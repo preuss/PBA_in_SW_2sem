@@ -27,17 +27,17 @@ import org.simpleframework.xml.core.Persister;
  * @author Andreas
  */
 public class BankHandler extends HandlerThread {
-
+	
 	private final Logger log = Logger.getLogger(BankHandler.class);
-
+	
 	private String receiveQueue;
 	private String sendQueue;
-
+	
 	public BankHandler(String receiveQueue, String sendQueue) {
 		this.receiveQueue = receiveQueue;
 		this.sendQueue = sendQueue;
 	}
-
+	
 	private CanonicalDTO generateBankList(CanonicalDTO dto) {
 		ArrayList<BankDTO> banks = new ArrayList<BankDTO>();
 		BankDTO bank;
@@ -70,7 +70,7 @@ public class BankHandler extends HandlerThread {
 		}
 		return dto;
 	}
-
+	
 	public void receiveCreditScore() throws IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException, Exception {
 		Channel chan = getConnection().createChannel();
 		//Declare a queue
@@ -84,12 +84,13 @@ public class BankHandler extends HandlerThread {
 			String message = new String(delivery.getBody());
 			System.out.println(" [x] Received '" + message);
 			CanonicalDTO dto = convertStringToDto(message);
+			log.debug("receivedCreditScore DTO: " + dto);
 			System.out.println("the score is " + dto.getCreditScore());
 			sendBanks(generateBankList(dto));
 			//Thread.sleep(10000);
 		}
 	}
-
+	
 	private void sendBanks(CanonicalDTO dto) throws IOException {
 		Channel channel = getConnection().createChannel();
 		channel.queueDeclare(sendQueue, false, false, false, null);
@@ -98,7 +99,7 @@ public class BankHandler extends HandlerThread {
 		channel.basicPublish("", sendQueue, props, message.getBytes());
 		System.out.println(" [x] Sent '" + message + "'");
 	}
-
+	
 	@Override
 	protected void doRun() {
 		while (isPleaseStop() == false) {

@@ -11,21 +11,25 @@ import org.simpleframework.xml.core.Persister;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Preuss
  */
 public class Aggregator extends HandlerThread {
 
+	private long timeOutInMilliseconds = 2 * 60 * 1000; // 2 minutes
 	private Logger log = Logger.getLogger(Aggregator.class);
 	private String peepQueueIn;
 	private String queueIn;
 	private String queueOut;
 	private HashMap<String, CanonicalDTO> canons = new HashMap();
 	private HashMap<String, List<BankDTO>> incomingBanks = new HashMap();
-	private HashMap<String, Integer> timeouts = new HashMap();
+	private HashMap<String, Date> timeouts = new HashMap();
 
 	public Aggregator(String peepQueueIn, String queueIn, String queueOut) {
 		this.peepQueueIn = peepQueueIn;
@@ -105,8 +109,20 @@ public class Aggregator extends HandlerThread {
 		}
 	}
 
-	private void cleanupMessages() {
-		// TODO: Need to use timeout.
+	private void cleanupMessages(Connection connection, Channel channel) throws IOException {
+		List<String> sendNowAndRemoveSsn = new ArrayList<>();
+		for (Map.Entry<String, Date> entry : timeouts.entrySet()) {
+			String ssn = entry.getKey();
+			Date timeoutDate = entry.getValue();
+			if (new Date().getTime() > timeoutDate.getTime()) {
+				sendNowAndRemoveSsn.add(ssn);
+			}
+		}
+		for (String ssn : sendNowAndRemoveSsn) {
+			timeouts.remove(ssn);
+			this.canons.remove(ssn);
+			sendMessage(connection, channel, ssn);
+		}
 	}
 
 	@Override
@@ -128,6 +144,7 @@ public class Aggregator extends HandlerThread {
 				CanonicalDTO allDto = receiveMessage(connection, channel, peepQueueIn);
 				if (allDto != null) {
 					addCanon(allDto);
+					addTimeout(allDto);
 				}
 
 				log.trace("receiveDto");
@@ -138,7 +155,7 @@ public class Aggregator extends HandlerThread {
 				}
 
 				sendAllSendableMessages(connection, channel);
-				cleanupMessages();
+				cleanupMessages(connection, channel);
 			} catch (ConsumerCancelledException | ShutdownSignalException | InterruptedException e) {
 				log.log(Level.SEVERE, null, e);
 				e.printStackTrace();
@@ -156,5 +173,11 @@ public class Aggregator extends HandlerThread {
 
 	private void addCanon(CanonicalDTO allDto) {
 		canons.put(allDto.getSsn(), allDto);
+	}
+
+	private void addTimeout(CanonicalDTO allDto) {
+		Date timeoutDate = new Date();
+		timeoutDate = new Date(timeoutDate.getTime() + timeOutInMilliseconds);
+		timeouts.put(allDto.getSsn(), timeoutDate);
 	}
 }
