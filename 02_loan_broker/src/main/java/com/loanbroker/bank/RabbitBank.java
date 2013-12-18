@@ -38,17 +38,17 @@ public class RabbitBank extends HandlerThread {
 	}
 
 	private List<String> calculateInterestRate(String ssn, int creditScore, double loanAmount, int loanDuration) {
-	    List<String> intrestRatelist = new ArrayList<>();
-            intrestRatelist.add(ssn);
-            //interestRate calculation
-            String interestRate = ((Math.random() * (12 - 3) + 3))+"";
-            intrestRatelist.add(interestRate);
-            return intrestRatelist;
+		List<String> intrestRatelist = new ArrayList<>();
+		intrestRatelist.add(ssn);
+		//interestRate calculation
+		String interestRate = ((Math.random() * (12 - 3) + 3)) + "";
+		intrestRatelist.add(interestRate);
+		return intrestRatelist;
 	}
 
 	/**
 	 * @param message, format
-	 *                 ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60 Output
+	 * ssn:123456-1234#creditScore:666#loanAmount:2050.0#loanDuration:60 Output
 	 * @return String
 	 */
 	private Map<String, String> convertMessageToMap(String message) {
@@ -90,7 +90,7 @@ public class RabbitBank extends HandlerThread {
 				// calculate interest rate
 				List<String> interestRate = calculateInterestRate(ssn, creditScore, loanAmount, loanDuration);
 
-				String messageOut = "interestRate:" + interestRate.get(interestRate.size() -1) + "#ssn:" + interestRate.get(0);
+				String messageOut = "interestRate:" + interestRate.get(interestRate.size() - 1) + "#ssn:" + interestRate.get(0);
 				System.out.println(" [x] Received by 02_rabbitBank: '" + messageIn + "'");
 				channel.basicPublish("", replyTo, null, messageOut.getBytes());
 				System.out.println(" [x] Sent by 02_rabbitBank: '" + messageOut + "'");
