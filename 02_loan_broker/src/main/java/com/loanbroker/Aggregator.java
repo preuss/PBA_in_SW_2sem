@@ -68,21 +68,38 @@ public class Aggregator extends HandlerThread {
 	private void sendMessage(Channel outChannel, String ssn) throws IOException {
 		CanonicalDTO incomingBank = normalizerDtos.get(ssn);
 
-		log.debug("sendMessage incomingBank: " + incomingBank);
 		// Cleanup
 		normalizerDtos.remove(ssn);
 		if (bankHandlerDtos.containsKey(ssn)) {
 			CanonicalDTO peekBank = bankHandlerDtos.get(ssn);
+			log.debug("\tOriginal Number of banks : " + peekBank.getBanks().size() + ", Now num: " + incomingBank.getBanks().size());
+			String peekBanksStr = "";
+			String incomBanksStr = "";
+			List<BankDTO> peekBanks = peekBank.getBanks(), incomBanks = incomingBank.getBanks();
+			for(BankDTO bank : peekBanks) {
+				peekBanksStr += bank.getName() + ", ";
+			}
+			peekBanksStr = peekBanksStr.trim().substring(0, peekBanksStr.length()-1); // remove comma (,)
+			for(BankDTO bank : incomBanks) {
+				incomBanksStr += bank.getName() + ", ";
+			}
+			incomBanksStr = incomBanksStr.trim().substring(0, incomBanksStr.length()-1); // remove comma (,)
+			log.debug("\tNeededbanks : " + peekBanksStr);
+			log.debug("\tCurrentBanks: " + incomBanksStr);
 			peekBank.setBanks(incomingBank.getBanks());
 			incomingBank = peekBank;
 
+			
 			bankHandlerDtos.remove(ssn);
+		} else {
+			log.debug("\tOriginal Number of banks : " + null + ", Now num: " + incomingBank.getBanks().size());
 		}
 		if (timeouts.containsKey(ssn)) {
 			timeouts.remove(ssn);
 		}
 
 		// Now sending.
+		log.debug("SENDING incomingBank: " + incomingBank);
 		String xmlStr = convertDtoToString(incomingBank);
 		outChannel.basicPublish("", queueOut, null, xmlStr.getBytes());
 	}
@@ -170,9 +187,9 @@ public class Aggregator extends HandlerThread {
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery(5000);
 				if (delivery != null && delivery.getBody() != null) {
 					if (delivery.getEnvelope().getExchange().length() > 0) {
-						log.debug("Delivery gotten. Gotten from EXCHANGE: " + delivery.getEnvelope().getExchange());
+						log.debug("Delivery gotten. Gotten from EXCHANGE: " + delivery.getEnvelope().getExchange() + ", Message: " + new String(delivery.getBody()).replace("\n", "").replace("\t", "").replace(" ", ""));
 					} else {
-						log.debug("Delivery gotten. Gotten from Routing Key: " + delivery.getEnvelope().getRoutingKey());
+						log.debug("Delivery gotten. Gotten from Routing Key: " + delivery.getEnvelope().getRoutingKey() + ", Message: " + new String(delivery.getBody()).replace("\n", "").replace("\t", "").replace(" ", ""));
 					}
 
 					byte[] messageRaw = delivery.getBody();
