@@ -40,7 +40,7 @@ public class RabbitmqTranslator extends HandlerThread {
 			while (true) {
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 				String message = new String(delivery.getBody());
-				System.out.println("Received at RabbitmqTranslator" + message);
+				System.out.println("Received at RabbitmqTranslator: " + message.replace("\t", "").replace(" ", "").replace("\n", "").replace("\r", ""));
 				CanonicalDTO dto = convertStringToDto(message);
 				System.out.println("the score is " + dto.getCreditScore());
 				sendRequestToXmlBank(channel, translateMessage(dto));
@@ -73,7 +73,7 @@ public class RabbitmqTranslator extends HandlerThread {
 		AMQP.BasicProperties props = builder.build();
 		channel.basicPublish("", RABBITMQ_BANK_IN, props, xmlString.getBytes());
 //		channel.basicPublish(EXCHANGE_NAME, "", props, xmlString.getBytes());
-		System.out.println("Message Sent from translator: " + xmlString);
+		System.out.println("Message Sent from translator: " + xmlString.replace("\t", "").replace(" ", "").replace("\n", "").replace("\r", ""));
 	}
 
 	@Override

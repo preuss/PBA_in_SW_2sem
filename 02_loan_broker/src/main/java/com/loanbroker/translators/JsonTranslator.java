@@ -33,14 +33,14 @@ public class JsonTranslator extends HandlerThread {
 		Channel channel = getConnection().createChannel();
 		//Declare a queue
 		channel.queueDeclare(queueNameReceive, false, false, false, null);
-		System.out.println("XmlTranslator Waiting for messages");
+		System.out.println("JsonTranslator Waiting for messages");
 		QueueingConsumer consumer = new QueueingConsumer(channel);
 		channel.basicConsume(queueNameReceive, true, consumer);
 		//start polling messages
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			String message = new String(delivery.getBody());
-			System.out.println("Received at XmlTranslator" + message);
+			System.out.println("Received at JsonTranslator: " + message.replace("\t", "").replace(" ", "").replace("\n", "").replace("\r", ""));
 			CanonicalDTO dto = convertStringToDto(message);
 			System.out.println("the score is " + dto.getCreditScore());
 			sendRequestToJsonBank(translateMessage(dto));

@@ -81,6 +81,7 @@ public class BankHandler extends HandlerThread {
 					connection = getConnection();
 					channel = createChannel(connection, receiveQueue);
 					channel.exchangeDeclare(sendFanoutExchange, "fanout");
+					log.debug("sendFanoutExchange: " + sendFanoutExchange);
 					consumer = new QueueingConsumer(channel);
 					channel.basicConsume(receiveQueue, true, consumer);
 				}

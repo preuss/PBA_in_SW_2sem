@@ -46,7 +46,7 @@ public class XmlTranslator extends HandlerThread {
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			String message = new String(delivery.getBody());
-			System.out.println("Received at XmlTranslator" + message);
+			System.out.println("Received at XmlTranslator: " + message.replace("\t", "").replace(" ", "").replace("\n", "").replace("\r", ""));
 			CanonicalDTO dto = convertStringToDto(message);
 			System.out.println("the score is " + dto.getCreditScore());
 			sendRequestToXmlBank(translateMessage(dto));
@@ -76,7 +76,7 @@ public class XmlTranslator extends HandlerThread {
 		builder.replyTo(replyToQueue);
 		AMQP.BasicProperties props = builder.build();
 		channel.basicPublish(EXCHANGE_NAME, "", props, xmlString.getBytes());
-		System.out.println("Message Sent from translator: " + xmlString);
+		System.out.println("Message Sent from translator: " + xmlString.replace("\t", "").replace(" ", "").replace("\n", "").replace("\r", ""));
 //      channel.close();
 //      connection.close();
 
