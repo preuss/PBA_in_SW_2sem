@@ -84,7 +84,7 @@ public class Starter {
 		normalizerBankIn.put("xml", "Group2.Normalizer.Xml");
 		normalizerBankIn.put("json", "Group2.Normalizer.Json");
 		normalizerBankIn.put("rabbitmq", "Group2.Normalizer.Rabbitmq");
-//		normalizerBankIn.put("webservice", "receipientSend_webservice");
+		normalizerBankIn.put("webservice", "receipientSend_webservice");
 		String normalizerOut = "Group2.Aggregator.Receive";
 		Normalizer normalizer = new Normalizer(normalizerBankIn, normalizerOut);
 		normalizer.start();
