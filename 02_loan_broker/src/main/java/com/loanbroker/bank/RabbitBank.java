@@ -6,7 +6,9 @@ import com.loanbroker.logging.Logger;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,9 +37,13 @@ public class RabbitBank extends HandlerThread {
 		this.receiveQueue = receiveQueue;
 	}
 
-	private double calculateInterestRate(String ssn, int creditScore, double loanAmount, int loanDuration) {
-		double interestRate = (Math.random() * (12 - 3) + 3);
-		return interestRate;
+	private List<String> calculateInterestRate(String ssn, int creditScore, double loanAmount, int loanDuration) {
+	    List<String> intrestRatelist = new ArrayList<>();
+            intrestRatelist.add(ssn);
+            //interestRate calculation
+            String interestRate = ((Math.random() * (12 - 3) + 3))+"";
+            intrestRatelist.add(interestRate);
+            return intrestRatelist;
 	}
 
 	/**
@@ -82,9 +88,9 @@ public class RabbitBank extends HandlerThread {
 				String replyTo = delivery.getProperties().getReplyTo();
 
 				// calculate interest rate
-				String interestRate = calculateInterestRate(ssn, creditScore, loanAmount, loanDuration) + "";
+				List<String> interestRate = calculateInterestRate(ssn, creditScore, loanAmount, loanDuration);
 
-				String messageOut = "interestRate:" + interestRate + "#ssn:" + ssn;
+				String messageOut = "interestRate:" + interestRate.get(interestRate.size() -1) + "#ssn:" + interestRate.get(0);
 				System.out.println(" [x] Received by 02_rabbitBank: '" + messageIn + "'");
 				channel.basicPublish("", replyTo, null, messageOut.getBytes());
 				System.out.println(" [x] Sent by 02_rabbitBank: '" + messageOut + "'");
