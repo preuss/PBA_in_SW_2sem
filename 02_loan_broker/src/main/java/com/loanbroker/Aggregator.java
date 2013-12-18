@@ -71,6 +71,7 @@ public class Aggregator extends HandlerThread {
 			if (incomingBanks.containsKey(ssn)) {
 				List<BankDTO> banks = incomingBanks.get(ssn).getBanks();
 				if (banks.size() == numBanks) {
+					log.debug("\t SSN:" + ssn + ", PeekDto: " + peekDto);
 					sendable.add(ssn);
 				}
 			}
@@ -89,13 +90,14 @@ public class Aggregator extends HandlerThread {
 
 		// Send all sendables.
 		for (String ssn : sendable) {
+			log.debug("\tSend Message with SSN: " + ssn);
 			sendMessage(connection, channel, ssn);
 		}
 	}
 
 	private void sendMessage(Connection connection, Channel outChannel, String ssn) throws IOException {
 		CanonicalDTO incomingBank = incomingBanks.get(ssn);
-
+		log.debug("sendMessage incomingBank: " + incomingBank);
 		// Cleanup
 		incomingBanks.remove(ssn);
 		if (peekDtoMap.containsKey(ssn)) {
