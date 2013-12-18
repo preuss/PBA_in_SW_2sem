@@ -121,6 +121,21 @@
 						<id>wsimport-generate-CreditScoreService</id>
 						<phase>generate-sources</phase>
 					</execution>
+				 <execution>
+				  <goals>
+				   <goal>wsimport</goal>
+				  </goals>
+				  <configuration>
+				   <wsdlFiles>
+				    <wsdlFile>localhost_8080/02_loan_broker/WebserviceBank.wsdl</wsdlFile>
+				   </wsdlFiles>
+				   <packageName>com.loanbroker.webservice.client</packageName>
+				   <wsdlLocation>http://localhost:8080/02_loan_broker/WebserviceBank?wsdl</wsdlLocation>
+				   <staleFile>${project.build.directory}/jaxws/stale/WebserviceBank.stale</staleFile>
+				  </configuration>
+				  <id>wsimport-generate-WebserviceBank</id>
+				  <phase>generate-sources</phase>
+				 </execution>
 				</executions>
 				<dependencies>
 					<dependency>
