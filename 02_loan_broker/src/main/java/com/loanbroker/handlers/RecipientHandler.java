@@ -29,30 +29,20 @@ public class RecipientHandler extends HandlerThread {
 
 	private final Logger log = Logger.getLogger(RecipientHandler.class);
 
-	private String queueIn;
-	/*	private String QUEUE_NAME_BANK_1;
-	 private String QUEUE_NAME_BANK_2;
-	 private String QUEUE_NAME_BANK_3;
-	 private String QUEUE_NAME_BANK_4;*/
-	/*	private final String QUEUE_NAME ="02_recipient_list_channel";
-	 private final String QUEUE_NAME_BANK_1 = "02_bank_xml_channel";
-	 private final String QUEUE_NAME_BANK_2 = "02_bank_json_channel";
-	 private final String QUEUE_NAME_BANK_3 = "02_bank_rabbitmq_channel";
-	 private final String QUEUE_NAME_BANK_4 = "02_bank_webservice_channel";*/
-
+	private String exchangeIn;
+	private final String QUEUE_IN = "Group2.RecipientHandler.Receive";
 	private Map<String, String> queueOutBanks;
 
-//    public RecipientHandler() {
-//        QUEUE_NAME = "reciepidequeu";
-//        Map<String, String> ques = new HashMap<>();
-//        ques.put("xml", "xml_channel");
-//        ques.put("json", "json_channel");
-//        ques.put("rabbitmq", "rabbitmq_channel");
-//        ques.put("webservice", "websercice_channel");
-//    }
-	public RecipientHandler(String queueIn, Map<String, String> bankQueues) {
-		this.queueIn = queueIn;
+	public RecipientHandler(String exchangeIn, Map<String, String> bankQueues) {
+		this.exchangeIn = exchangeIn;
 		this.queueOutBanks = bankQueues;
+	}
+
+	private String getBankChannelName(String bankName) {
+		if (!queueOutBanks.containsKey(bankName)) {
+			return null;
+		}
+		return queueOutBanks.get(bankName);
 	}
 
 	@Override
@@ -66,9 +56,12 @@ public class RecipientHandler extends HandlerThread {
 			try {
 				if (connection == null) {
 					connection = getConnection();
-					channel = createChannel(connection, queueIn);
+					channel = connection.createChannel();
+					channel.queueDeclare(QUEUE_IN, false, false, false, null);
+					channel.exchangeDeclare(exchangeIn, "fanout");
+					channel.queueBind(QUEUE_IN, exchangeIn, "");
 					consumer = new QueueingConsumer(channel);
-					consumerTag = channel.basicConsume(queueIn, true, consumer);
+					consumerTag = channel.basicConsume(QUEUE_IN, true, consumer);
 					for (String queueOut : queueOutBanks.values()) {
 						//channel.queueDeclare(queueIn, false, false, false, null);
 						channel.queueDeclare(queueOut, false, false, false, null);
@@ -79,12 +72,26 @@ public class RecipientHandler extends HandlerThread {
 
 				log.debug("Try to read a message to RecipientHandler");
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-				byte [] messageRaw = delivery.getBody();
+				byte[] messageRaw = delivery.getBody();
 				String xmlStr = new String(messageRaw);
 				log.debug("Message: " + xmlStr.replace("\r", "").replace("\n", "").replace(" ", "").replace("\t", ""));
-				processBankOutput(channel, xmlStr);
-				//CanonicalDTO dto = new String(delivery.getBody());
-				//System.out.println(" [x] Received '" + message + "'");
+
+				CanonicalDTO dto = convertStringToDto(xmlStr);
+				boolean noBanks = true;
+				for (BankDTO bank : dto.getBanks()) {
+					String queueName = getBankChannelName(bank.getName());
+					if (queueName != null) {
+						channel.basicPublish("", queueName, null, xmlStr.getBytes());
+						System.out.println(" [x] Sent '" + xmlStr.replace("\r", "").replace("\n", "").replace(" ", "").replace("\t", "") + "'");
+						noBanks = false;
+						log.info("Delivered to bank: " + bank.getName());
+					} else {
+						// TODO: publish to error queue.
+					}
+				}
+				if (noBanks) {
+					log.info("RecipientHandler: No Banks for this DTO: " + dto);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				if (e.getCause() != null) {
@@ -120,53 +127,4 @@ public class RecipientHandler extends HandlerThread {
 			}
 		}
 	}
-
-	private void processBankOutput(Channel channel, String xmlStr) throws IOException {
-		Serializer serializer = new Persister();
-		CanonicalDTO dto = convertStringToDto(xmlStr);
-		if(dto == null) {
-			log.debug("Problem with decoding message to DTO, throwing away :-<");
-			return;
-		}
-
-		boolean noBanks = true;
-		for (BankDTO bank : dto.getBanks()) {
-			String queueName = getBankChannelName(bank.getName());
-			if (queueName != null) {
-				channel.basicPublish("", queueName, null, xmlStr.getBytes());
-				System.out.println(" [x] Sent '" + xmlStr + "'");
-				noBanks = false;
-				log.info("Delivered to bank: " + bank.getName());
-			} else {
-				// TODO: publish to error queue.
-			}
-		}
-		if (noBanks) {
-			log.info("RecipientHandler: No Banks for this DTO: " + dto);
-		}
-	}
-
-	private String getBankChannelName(String bankName) {
-		if (!queueOutBanks.containsKey(bankName)) {
-			return null;
-		}
-		return queueOutBanks.get(bankName);
-	}
-
-	public void sendRecipients() throws IOException {
-		Connection connection = getConnection();
-		Channel channel = connection.createChannel();
-
-		channel.queueDeclare(queueIn, true, false, false, null);
-		String message = "Hello World!";
-		for (int i = 0; i < Integer.MAX_VALUE; i++) {
-			channel.basicPublish("", queueIn, null, message.getBytes());
-		}
-		System.out.println(" [x] Sent '" + message + "'");
-
-		channel.close();
-		connection.close();
-
-	}
-
 }

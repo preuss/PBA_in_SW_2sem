@@ -41,18 +41,18 @@ public class Starter {
 		creditHandler.start();
 
 		String bankIn = "Group2.BankHandler.Receive";
-		String bankOut = "Group2.BankHandler.Send";
-		log.debug("Starting bankhandler: " + bankIn + " >--> " + bankOut);
-		BankHandler bankHandler = new BankHandler(bankIn, bankOut);
+		String bankExchangeFanout = "Group2.BankHandler.Exchange.Fanout";
+		log.debug("Starting bankhandler: " + bankIn + " >--> " + bankExchangeFanout);
+		BankHandler bankHandler = new BankHandler(bankIn, bankExchangeFanout);
 		bankHandler.start();
-
-		String aggregatorFanoutIn = "Group2.BankHandler.Send";
-		String[] aggregatorFanoutOutArray = {
-			"Group2.RecipientHandler.Receive", 
-			"Group2.Aggregator.PeepIn"
-		};
-		AggregatorFanout fanout = new AggregatorFanout(aggregatorFanoutIn, aggregatorFanoutOutArray);
-		fanout.start();
+		/*		String aggregatorFanoutIn = "Group2.BankHandler.Send";
+		 String[] aggregatorFanoutOutArray = {
+		 "Group2.RecipientHandler.Receive",
+		 "Group2.Aggregator.PeepIn"
+		 };
+		 AggregatorFanout fanout = new AggregatorFanout(aggregatorFanoutIn, aggregatorFanoutOutArray);
+		 fanout.start();
+		 */
 
 		String recipientIn = "Group2.RecipientHandler.Receive";
 		Map<String, String> recipientOut = new HashMap<>();
@@ -64,7 +64,7 @@ public class Starter {
 			Map.Entry<String, String> entry = it.next();
 			//log.debug("Starting recipientHandler: " + bankIn + " >--> " + entry.getValue() + "(" + entry.getKey() + ")");
 		}
-		RecipientHandler recipientHandler = new RecipientHandler(recipientIn, recipientOut);
+		RecipientHandler recipientHandler = new RecipientHandler(bankExchangeFanout, recipientOut);
 		recipientHandler.start();
 
 		XmlTranslator xmlTranslator = new XmlTranslator("Group2.Translator.Xml", "Group2.Normalizer.Xml");
@@ -74,8 +74,8 @@ public class Starter {
 		String jsonTranslatorReplyTo = "Group2.Normalizer.Json";
 		JsonTranslator jsonTranslator = new JsonTranslator(jsonTranslatorIn, jsonTranslatorReplyTo);
 		jsonTranslator.start();
-		
-		String rabbitmqTranslatorIn ="Group2.Translator.Rabbitmq";
+
+		String rabbitmqTranslatorIn = "Group2.Translator.Rabbitmq";
 		String rabbitmqTranslatorReplyTo = "Group2.Normalizer.Rabbitmq";
 		RabbitmqTranslator rabbitTranslator = new RabbitmqTranslator(rabbitmqTranslatorIn, rabbitmqTranslatorReplyTo);
 		rabbitTranslator.start();
@@ -89,12 +89,11 @@ public class Starter {
 		Normalizer normalizer = new Normalizer(normalizerBankIn, normalizerOut);
 		normalizer.start();
 
-		String aggPeepIn = "Group2.Aggregator.PeepIn";
+		//String aggPeepIn = "Group2.Aggregator.PeepIn";
 		String aggIn = "Group2.Aggregator.Receive";
 		String aggOut = "Group2.Aggregator.Send";
-		Aggregator aggregator = new Aggregator(aggPeepIn, aggIn, aggOut);
+		Aggregator aggregator = new Aggregator(bankExchangeFanout, aggIn, aggOut);
 		aggregator.start();
-
 	}
 
 }

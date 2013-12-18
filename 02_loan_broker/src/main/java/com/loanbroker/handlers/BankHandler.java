@@ -14,10 +14,12 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.QueueingConsumer.Delivery;
 import com.rabbitmq.client.ShutdownSignalException;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
@@ -27,18 +29,18 @@ import org.simpleframework.xml.core.Persister;
  * @author Andreas
  */
 public class BankHandler extends HandlerThread {
-	
+
 	private final Logger log = Logger.getLogger(BankHandler.class);
-	
+
 	private String receiveQueue;
-	private String sendQueue;
-	
-	public BankHandler(String receiveQueue, String sendQueue) {
+	private String sendFanoutExchange;
+
+	public BankHandler(String receiveQueue, String sendFanoutExchange) {
 		this.receiveQueue = receiveQueue;
-		this.sendQueue = sendQueue;
+		this.sendFanoutExchange = sendFanoutExchange;
 	}
-	
-	private CanonicalDTO generateBankList(CanonicalDTO dto) {
+
+	private List<BankDTO> generateBankList(CanonicalDTO dto) {
 		ArrayList<BankDTO> banks = new ArrayList<BankDTO>();
 		BankDTO bank;
 		if (dto.getCreditScore() > 0) {
@@ -65,47 +67,49 @@ public class BankHandler extends HandlerThread {
 			bank.setName("rabbitmq");
 			banks.add(bank);
 		}
-		dto.setBanks(banks);
-		for (int i = 0; i < dto.getBanks().size(); i++) {
-		}
-		return dto;
+		return banks;
 	}
-	
-	public void receiveCreditScore() throws IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException, Exception {
-		Channel chan = getConnection().createChannel();
-		//Declare a queue
-		chan.queueDeclare(receiveQueue, false, false, false, null);
-		System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-		QueueingConsumer consumer = new QueueingConsumer(chan);
-		chan.basicConsume(receiveQueue, true, consumer);
-		//start polling messages
-		while (true) {
-			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-			String message = new String(delivery.getBody());
-			System.out.println(" [x] Received '" + message);
-			CanonicalDTO dto = convertStringToDto(message);
-			log.debug("receivedCreditScore DTO: " + dto);
-			System.out.println("the score is " + dto.getCreditScore());
-			sendBanks(generateBankList(dto));
-			//Thread.sleep(10000);
-		}
-	}
-	
-	private void sendBanks(CanonicalDTO dto) throws IOException {
-		Channel channel = getConnection().createChannel();
-		channel.queueDeclare(sendQueue, false, false, false, null);
-		String message = convertDtoToString(dto);
-		AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().replyTo(channel.queueDeclare().getQueue()).build();
-		channel.basicPublish("", sendQueue, props, message.getBytes());
-		System.out.println(" [x] Sent '" + message + "'");
-	}
-	
+
 	@Override
 	protected void doRun() {
+		Connection connection = null;
+		Channel channel = null;
+		QueueingConsumer consumer = null;
 		while (isPleaseStop() == false) {
 			try {
-				receiveCreditScore();
-//                sendBanks();
+				if (connection == null) {
+					connection = getConnection();
+					channel = createChannel(connection, receiveQueue);
+					channel.exchangeDeclare(sendFanoutExchange, "fanout");
+					consumer = new QueueingConsumer(channel);
+					channel.basicConsume(receiveQueue, true, consumer);
+				}
+				// Receive
+				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+				String message = null;
+				CanonicalDTO dto = null;
+				if (delivery != null && delivery.getBody() != null) {
+					byte[] messageRaw = delivery.getBody();
+					message = new String(messageRaw);
+					dto = convertStringToDto(message);
+					log.debug("receivedCreditScore DTO: " + dto);
+					System.out.println("the score is " + dto.getCreditScore());
+				}
+
+				// Get bankList and send to exchange
+				if (dto != null) {
+					// Generate banklist
+					List<BankDTO> bankList = generateBankList(dto);
+					dto.setBanks(bankList);
+
+					message = convertDtoToString(dto);
+
+					// Send to exchange
+					AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().replyTo(channel.queueDeclare().getQueue()).build();
+					channel.basicPublish(sendFanoutExchange, "", props, message.getBytes());
+					log.debug("BankHandler sent message to Exchange: " + message.replace("\t", "").replace("\r", "").replace("\n", "").replace(" ", ""));
+				}
+
 			} catch (IOException e) {
 				log.warning(e.getClass() + ", Message: " + e.getMessage());
 				e.printStackTrace();
