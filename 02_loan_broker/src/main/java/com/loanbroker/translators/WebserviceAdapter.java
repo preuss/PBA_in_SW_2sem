@@ -62,7 +62,9 @@ public class WebserviceAdapter extends HandlerThread {
 					channel.basicConsume(queueIn, true, consumer);
 				}
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-				CanonicalDTO dto = convertStringToDto(new String(delivery.getBody()));
+				byte [] messageRaw = delivery.getBody();
+				String messageStr = new String(messageRaw);
+				CanonicalDTO dto = convertStringToDto(messageStr);
 				dto = getLoanOffer(dto);
 				
 				String replyToQueue = delivery.getProperties().getReplyTo();

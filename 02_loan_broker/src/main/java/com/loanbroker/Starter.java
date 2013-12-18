@@ -10,6 +10,8 @@ import com.loanbroker.handlers.BankHandler;
 import com.loanbroker.handlers.CreditHandler;
 import com.loanbroker.handlers.RecipientHandler;
 import com.loanbroker.translators.RabbitmqTranslator;
+import com.loanbroker.translators.WebserviceAdapter;
+import com.loanbroker.translators.WebserviceTranslator;
 import java.util.HashMap;
 import java.util.*;
 
@@ -79,12 +81,21 @@ public class Starter {
 		String rabbitmqTranslatorReplyTo = "Group2.Normalizer.Rabbitmq";
 		RabbitmqTranslator rabbitTranslator = new RabbitmqTranslator(rabbitmqTranslatorIn, rabbitmqTranslatorReplyTo);
 		rabbitTranslator.start();
+		
+		String wsTranslatorIn = "Group2.Translator.Webservice";
+		String wsTranslatorReplyTo = "Group2.Normalizer.Webservice";
+		WebserviceTranslator wsTranslator = new WebserviceTranslator(wsTranslatorIn, wsTranslatorReplyTo);
+		wsTranslator.start();
+		
+		String wsReceive = "Group2.RabbitBank.Receive";
+		WebserviceAdapter wsAdapter = new WebserviceAdapter(wsReceive);
+		wsAdapter.start();
 
 		Map<String, String> normalizerBankIn = new HashMap<>();
 		normalizerBankIn.put("xml", "Group2.Normalizer.Xml");
 		normalizerBankIn.put("json", "Group2.Normalizer.Json");
 		normalizerBankIn.put("rabbitmq", "Group2.Normalizer.Rabbitmq");
-		normalizerBankIn.put("webservice", "receipientSend_webservice");
+		normalizerBankIn.put("webservice", "Group2.Normalizer.Webservice");
 		String normalizerOut = "Group2.Aggregator.Receive";
 		Normalizer normalizer = new Normalizer(normalizerBankIn, normalizerOut);
 		normalizer.start();

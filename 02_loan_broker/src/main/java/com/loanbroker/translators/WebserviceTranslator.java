@@ -15,12 +15,11 @@ import java.util.logging.Logger;
 public class WebserviceTranslator extends HandlerThread {
 
 	private String queueIn;
-	private String queueOut;
+	private String QUEUE_OUT = "Group2.WebserviceBank.Receive";
 	private String replyToQueue;
 
-	public WebserviceTranslator(String queueIn, String queueOut, String replyToQueue) {
+	public WebserviceTranslator(String queueIn, String replyToQueue) {
 		this.queueIn = queueIn;
-		this.queueOut = queueOut;
 		this.replyToQueue = replyToQueue;
 	}
 
@@ -29,7 +28,7 @@ public class WebserviceTranslator extends HandlerThread {
 		Channel channel = connection.createChannel();
 		
 		channel.queueDeclare(queueIn, false, false, false, null);
-		channel.queueDeclare(queueOut, false, false, false, null);
+		channel.queueDeclare(QUEUE_OUT, false, false, false, null);
 		channel.queueDeclare(replyToQueue, false, false, false, null);
 		
 		QueueingConsumer consumer = new QueueingConsumer(channel);
@@ -42,7 +41,7 @@ public class WebserviceTranslator extends HandlerThread {
 		while(!isPleaseStop()) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			String xmlString = new String(delivery.getBody());
-			channel.basicPublish("", queueOut, props, xmlString.getBytes());
+			channel.basicPublish("", QUEUE_OUT, props, xmlString.getBytes());
 		}
 	}
 
