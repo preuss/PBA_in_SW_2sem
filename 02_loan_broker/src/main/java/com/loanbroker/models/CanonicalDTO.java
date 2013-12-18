@@ -30,8 +30,8 @@ public class CanonicalDTO {
 
 	public CanonicalDTO() {
 		ssn = "";
-		loanAmount = 0;
-		loanDuration = 360;
+		loanAmount = -1;
+		loanDuration = -1;
 	}
 
 	public String getSsn() {
