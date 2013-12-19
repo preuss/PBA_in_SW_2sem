@@ -49,19 +49,19 @@ public class BankHandler extends HandlerThread {
 			bank.setName("webservice");
 			banks.add(bank);
 		}
-		if (dto.getCreditScore() > 200) {
+		if (dto.getCreditScore() > 100) {
 			bank = new BankDTO();
 			//bank.setName("Bank of the Average");
 			bank.setName("json");
 			banks.add(bank);
 		}
-		if (dto.getCreditScore() > 400) {
+		if (dto.getCreditScore() > 200) {
 			bank = new BankDTO();
 			//bank.setName("Bank of the Rich");
 			bank.setName("xml");
 			banks.add(bank);
 		}
-		if (dto.getCreditScore() > 600) {
+		if (dto.getCreditScore() > 300) {
 			bank = new BankDTO();
 			//bank.setName("Bank of the Elite");
 			bank.setName("rabbitmq");

@@ -60,16 +60,19 @@ public class WebserviceAdapter extends HandlerThread {
 					channel.queueDeclare(queueIn, false, false, false, null);
 					consumer = new QueueingConsumer(channel);
 					channel.basicConsume(queueIn, true, consumer);
+					log.debug("[*] WS Adapter ready to receive");
 				}
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 				byte [] messageRaw = delivery.getBody();
 				String messageStr = new String(messageRaw);
 				CanonicalDTO dto = convertStringToDto(messageStr);
+				log.debug("WS Adapter received DTO -> " + dto);
 				dto = getLoanOffer(dto);
 				
 				String replyToQueue = delivery.getProperties().getReplyTo();
 				channel.queueDeclare(replyToQueue, false, false, false, null);
 				
+				log.debug("WS Adapter send DTO reply-to: " + delivery.getProperties().getReplyTo());
 				channel.basicPublish("", replyToQueue, null, convertDtoToString(dto).getBytes());
 			} catch (IOException e) {
 				e.printStackTrace();

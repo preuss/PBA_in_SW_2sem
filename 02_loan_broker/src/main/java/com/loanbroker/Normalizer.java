@@ -90,6 +90,7 @@ public class Normalizer extends HandlerThread {
 				 Example of json response:
 				 {"interestRate":5.5,"ssn":1605789787}
 				 */
+				log.debug("----------> Message (JSON): " + message);
 				JSONObject json = new JSONObject(message);
 				ssn = json.getString("ssn");
 				interestRate = json.getDouble("interestRate");
@@ -120,6 +121,18 @@ public class Normalizer extends HandlerThread {
 					ssn = value;
 				}
 			}
+		} else if ("webservice".equalsIgnoreCase(bankName)) {
+			log.debug("From Bank Webservice Message: " + message);
+			CanonicalDTO messageDto = convertStringToDto(message);
+			for (BankDTO bankDto : messageDto.getBanks()) {
+				if ("webservice".equalsIgnoreCase(bankDto.getName())) {
+					interestRate = bankDto.getInterestRate();
+					ssn = messageDto.getSsn();
+					break;
+				}
+			}
+		} else {
+			log.debug("From Bank UNKNOWN with name : " + bankName);
 		}
 		log.debug("SSN: " + ssn + ", InterestRate: " + interestRate);
 		if (ssn == null || interestRate == Double.NaN) {
@@ -292,12 +305,12 @@ public class Normalizer extends HandlerThread {
 					}
 				} finally {
 					/*
-					for (Channel channel : readChannels.values()) {
-						closeChannel(channel);
-						channel = null;
-					}
-					closeConnection(conn);
-					conn = null;*/
+					 for (Channel channel : readChannels.values()) {
+					 closeChannel(channel);
+					 channel = null;
+					 }
+					 closeConnection(conn);
+					 conn = null;*/
 				}
 			} catch (IOException e) {
 				log.warning(e.getClass() + ", Message: " + e.getMessage());

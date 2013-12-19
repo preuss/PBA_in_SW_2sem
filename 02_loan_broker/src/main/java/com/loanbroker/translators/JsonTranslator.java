@@ -52,7 +52,9 @@ public class JsonTranslator extends HandlerThread {
 		String jsonValue = "{\"ssn\":" + dto.getSsn().replace("-", "").trim()
 				+ ",\"creditScore\":" + dto.getCreditScore()
 				+ ",\"loanAmount\":" + dto.getLoanAmount()
-				+ ",\"loanDuration\":" + dto.getLoanDuration() + "}";
+				+ ",\"loanDuration\":" + dto.getLoanDuration() 
+				//+ ",\"rki\":" + false 
+			+ "}";
 
 		return jsonValue;
 	}

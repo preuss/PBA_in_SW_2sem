@@ -61,7 +61,7 @@ public class Starter {
 		recipientOut.put("xml", "Group2.Translator.Xml");
 		recipientOut.put("json", "Group2.Translator.Json");
 		recipientOut.put("rabbitmq", "Group2.Translator.Rabbitmq");
-//		recipientOut.put("webservice", "Group2.RecipientHandler.Webservice.Send");
+		recipientOut.put("webservice", "Group2.Translator.Webservice");
 		for (Iterator<Map.Entry<String, String>> it = recipientOut.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<String, String> entry = it.next();
 			//log.debug("Starting recipientHandler: " + bankIn + " >--> " + entry.getValue() + "(" + entry.getKey() + ")");
@@ -81,13 +81,14 @@ public class Starter {
 		String rabbitmqTranslatorReplyTo = "Group2.Normalizer.Rabbitmq";
 		RabbitmqTranslator rabbitTranslator = new RabbitmqTranslator(rabbitmqTranslatorIn, rabbitmqTranslatorReplyTo);
 		rabbitTranslator.start();
-		
+
 		String wsTranslatorIn = "Group2.Translator.Webservice";
 		String wsTranslatorReplyTo = "Group2.Normalizer.Webservice";
 		WebserviceTranslator wsTranslator = new WebserviceTranslator(wsTranslatorIn, wsTranslatorReplyTo);
 		wsTranslator.start();
-		
-		String wsReceive = "Group2.RabbitBank.Receive";
+
+//		String wsReceive = "Group2.RabbitBank.Receive";
+		String wsReceive = "Group2.WebserviceBank.Receive";
 		WebserviceAdapter wsAdapter = new WebserviceAdapter(wsReceive);
 		wsAdapter.start();
 

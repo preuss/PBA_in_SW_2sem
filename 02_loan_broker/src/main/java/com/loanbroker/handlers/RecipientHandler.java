@@ -39,7 +39,7 @@ public class RecipientHandler extends HandlerThread {
 	}
 
 	private String getBankChannelName(String bankName) {
-		if (!queueOutBanks.containsKey(bankName)) {
+		if (!queueOutBanks.containsKey(bankName.toLowerCase())) {
 			return null;
 		}
 		return queueOutBanks.get(bankName);
