@@ -136,6 +136,21 @@
 				  <id>wsimport-generate-WebserviceBank</id>
 				  <phase>generate-sources</phase>
 				 </execution>
+				 <execution>
+				  <goals>
+				   <goal>wsimport</goal>
+				  </goals>
+				  <configuration>
+				   <wsdlFiles>
+				    <wsdlFile>localhost_8080/02_loan_broker/LoanWebservice.wsdl</wsdlFile>
+				   </wsdlFiles>
+				   <packageName>com.loanbroker.webservice.loanwebservice.client</packageName>
+				   <wsdlLocation>http://localhost:8080/02_loan_broker/LoanWebservice?wsdl</wsdlLocation>
+				   <staleFile>${project.build.directory}/jaxws/stale/LoanWebservice.stale</staleFile>
+				  </configuration>
+				  <id>wsimport-generate-LoanWebservice</id>
+				  <phase>generate-sources</phase>
+				 </execution>
 				</executions>
 				<dependencies>
 					<dependency>

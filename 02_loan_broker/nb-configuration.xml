@@ -24,5 +24,6 @@
         <org-netbeans-modules-css-prep.less_2e_compiler_2e_options/>
         <org-netbeans-modules-web-clientproject-api.js_2e_libs_2e_folder>js/libs</org-netbeans-modules-web-clientproject-api.js_2e_libs_2e_folder>
         <org-netbeans-modules-maven-jaxws._5f_C_5f_WebserviceBank>http://localhost:8080/02_loan_broker/WebserviceBank?wsdl</org-netbeans-modules-maven-jaxws._5f_C_5f_WebserviceBank>
+        <org-netbeans-modules-maven-jaxws._5f_C_5f_LoanWebservice>http://localhost:8080/02_loan_broker/LoanWebservice?wsdl</org-netbeans-modules-maven-jaxws._5f_C_5f_LoanWebservice>
     </properties>
 </project-shared-configuration>

@@ -90,7 +90,7 @@ public class Normalizer extends HandlerThread {
 				 Example of json response:
 				 {"interestRate":5.5,"ssn":1605789787}
 				 */
-				log.debug("----------> Message (JSON): " + message);
+				log.debug("From Bank JSON Message: " + message.replace("\n", "").replace(" ", "").replace("\t", ""));
 				JSONObject json = new JSONObject(message);
 				ssn = json.getString("ssn");
 				interestRate = json.getDouble("interestRate");
@@ -111,7 +111,7 @@ public class Normalizer extends HandlerThread {
 			 example output:
 			 "interestRate:5.5#ssn:160578-9787"
 			 */
-			log.debug("From Bank RabbitMQ Message: " + message);
+			log.debug("From Bank RabbitMQ Message: " + message.replace("\n", "").replace(" ", "").replace("\t", ""));
 			for (String keyValue : message.split("#")) {
 				String key = keyValue.split(":")[0];
 				String value = keyValue.split(":")[1];
@@ -122,7 +122,7 @@ public class Normalizer extends HandlerThread {
 				}
 			}
 		} else if ("webservice".equalsIgnoreCase(bankName)) {
-			log.debug("From Bank Webservice Message: " + message);
+			log.debug("From Bank Webservice Message: " + message.replace("\n", "").replace(" ", "").replace("\t", ""));
 			CanonicalDTO messageDto = convertStringToDto(message);
 			for (BankDTO bankDto : messageDto.getBanks()) {
 				if ("webservice".equalsIgnoreCase(bankDto.getName())) {

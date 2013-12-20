@@ -4,4 +4,6 @@
 	<system systemId="http://datdb.cphbusiness.dk:8080/CreditBureau/CreditScoreService?xsd=1" uri="wsdl/datdb.cphbusiness.dk_8080/CreditBureau/CreditScoreService.xsd_1.xsd"/>
     <system systemId="http://localhost:8080/02_loan_broker/WebserviceBank?wsdl" uri="wsdl/localhost_8080/02_loan_broker/WebserviceBank.wsdl"/>
     <system systemId="http://localhost:8080/02_loan_broker/WebserviceBank?xsd=1" uri="wsdl/localhost_8080/02_loan_broker/WebserviceBank.xsd_1.xsd"/>
+    <system systemId="http://localhost:8080/02_loan_broker/LoanWebservice?wsdl" uri="wsdl/localhost_8080/02_loan_broker/LoanWebservice.wsdl"/>
+    <system systemId="http://localhost:8080/02_loan_broker/LoanWebservice?xsd=1" uri="wsdl/localhost_8080/02_loan_broker/LoanWebservice.xsd_1.xsd"/>
 </catalog>
