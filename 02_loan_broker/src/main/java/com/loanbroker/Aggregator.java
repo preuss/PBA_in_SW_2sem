@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class Aggregator extends HandlerThread {
 
-	private long timeOutInMilliseconds = 1 * 20 * 1000; // 2 minutes
+	private long timeOutInMilliseconds = 1 * 20 * 1000; // 20 sekunder
 	private Logger log = Logger.getLogger(Aggregator.class);
 	private String exchangeIn;
 	private String PEEP_QUEUE_IN = "Group2.Aggregator.PeepIn";

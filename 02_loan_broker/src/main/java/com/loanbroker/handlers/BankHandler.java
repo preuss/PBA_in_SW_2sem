@@ -1,9 +1,5 @@
 package com.loanbroker.handlers;
 
-/**
- *
- * @author Andreas
- */
 import com.loanbroker.logging.Logger;
 import com.loanbroker.models.BankDTO;
 import com.loanbroker.models.CanonicalDTO;
@@ -25,7 +21,6 @@ import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 /**
- *
  * @author Andreas
  */
 public class BankHandler extends HandlerThread {
